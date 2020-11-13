@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<launch> 
+    <node pkg="image_transport" type="republish" name="republish" output="screen" args="h264 in:=/tello/image_raw raw out:=/tello_raw"/>
+    <node pkg="recent_test_case" type="fromMarker.py" name="fromMarker" output="screen"/>
+    <node pkg="rosbag" type="record" name="myrosbag"  output="screen" args="-a -x /tello_raw" />
+</launch>
