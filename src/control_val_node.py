@@ -26,6 +26,7 @@ def cb_box(data):
 
 def cb_takeoff(data):
     global is_takeoff
+    time.sleep(5)
     is_takeoff=1
 
 def cb_land(data):
@@ -56,7 +57,7 @@ rate = rospy.Rate(20)
 
 box_lock=threading.Lock()
 ref_lock=threading.Lock()
-is_takeoff=1
+is_takeoff=0
 
 cmd_val_pub_msg=Twist()
 x_d = 1
@@ -109,7 +110,7 @@ while  not rospy.is_shutdown():
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
         
-        kp = 1
+        kp = 2
         ki = 0
         kd = 0.5
         cmd_x=kp*err_x+ki*err_x_int+kd*err_x_dif
@@ -165,7 +166,7 @@ while  not rospy.is_shutdown():
         if abs(cmd_val_pub_msg.linear.z)>2:
             cmd_val_pub_msg.linear.z=cmd_val_pub_msg.linear.z/abs(cmd_val_pub_msg.linear.z)*2
         
-        print(cmd_val_pub_msg)
+        print(cmd_val_pub_msg.linear)
 
         
         cmd_val_pub.publish(cmd_val_pub_msg)

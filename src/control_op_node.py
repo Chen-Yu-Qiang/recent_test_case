@@ -17,7 +17,7 @@ while 1:
     op=raw_input()
     if op == "t":
         rospy.loginfo("takeoff!")
-        #takeoff_pub.publish(Empty())
-    elif op=="l":
+        takeoff_pub.publish(Empty())
+    else:
         rospy.loginfo("land!!!")
-        #land_pub.publish(Empty())
+        land_pub.publish(Empty())

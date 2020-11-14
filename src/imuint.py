@@ -22,7 +22,7 @@ def callback(data):
     px = -data.twist.twist.angular.x*dt+px
     py = data.twist.twist.angular.y*dt+py
     pz = -data.twist.twist.angular.z*dt+pz
-    print(px,dt,data.twist.twist.angular.x)
+    #print(px,dt,data.twist.twist.angular.x)
     q0 = data.pose.pose.orientation.w
     q1 = data.pose.pose.orientation.x
     q2 = data.pose.pose.orientation.y
