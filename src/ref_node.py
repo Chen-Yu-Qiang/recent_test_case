@@ -13,6 +13,12 @@ def cb_takeoff(data):
 def cb_land(data):
     global is_takeoff
     is_takeoff=0   
+isSIM=rospy.get_param('isSIM')
+is_takeoff=0
+if isSIM==1:
+    is_takeoff=1
+else:
+    is_takeoff=0
 
 
 
@@ -24,7 +30,7 @@ land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
 rate = rospy.Rate(20)
 
 
-is_takeoff=0
+
 m=0
 
 while  not rospy.is_shutdown():
