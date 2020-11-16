@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <launch> 
-    <param name="isSIM" value="0"/>
+    <param name="isSIM" value="1"/>
     <node pkg="image_transport" type="republish" name="republish" output="screen" args="h264 in:=/tello/image_raw raw out:=/tello_raw"/>
     <node pkg="recent_test_case" type="findBoxOnLine.py" name="findBoxOnLine" output="screen"/>
     <node pkg="recent_test_case" type="control_val_node.py" name="control_val_node" output="screen"/>

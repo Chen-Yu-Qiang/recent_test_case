@@ -40,6 +40,12 @@ def cb_ref(data):
     y_d=data.linear.y
     z_d=data.linear.z
     ref_lock.release()
+isSIM=rospy.get_param('isSIM')
+
+if isSIM==1:
+    is_takeoff=1
+else:
+    is_takeoff=0
 
 
 
@@ -57,7 +63,6 @@ rate = rospy.Rate(20)
 
 box_lock=threading.Lock()
 ref_lock=threading.Lock()
-is_takeoff=0
 
 cmd_val_pub_msg=Twist()
 x_d = 1
@@ -168,8 +173,8 @@ while  not rospy.is_shutdown():
         
         print(cmd_val_pub_msg.linear)
 
-        
-        cmd_val_pub.publish(cmd_val_pub_msg)
+        if isSIM==0:
+            cmd_val_pub.publish(cmd_val_pub_msg)
 
         box_pub_msg=Twist()
         box_pub_msg.linear.x = x_now
