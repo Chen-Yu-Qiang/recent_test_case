@@ -66,7 +66,7 @@ def cb_img(data):
     a=rvec
     b=tvec
     rr, _ = cv2.Rodrigues(np.array([a[0][0], a[1][0], a[2][0]]))
-    tt = np.array([b[0][0], b[1][0], b[2][0]+0.21])
+    tt = np.array([b[0][0], b[1][0], b[2][0]])
     cam_r = rr.transpose()
     cam_t = -cam_r.dot(tt)
     cam_x = cam_t[0]
