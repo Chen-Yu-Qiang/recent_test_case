@@ -7,7 +7,7 @@ def nothing(a):
     """Does nothing."""
     pass
 
-img = cv2.imread(os.getcwd()+"/../g2.png")
+img = cv2.imread(os.getcwd()+"/../rgb.png")
 
 # convert to HSV
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 

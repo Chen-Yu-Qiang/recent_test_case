@@ -9,22 +9,27 @@ def findRect(img):
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     print(hsv[360][480])
-    # # for g.png
-    # lower_red = np.array([30, 70, 120])
-    # upper_red = np.array([80, 255, 255])
+    # for g.png
+    lower_g = np.array([30, 0, 0])
+    upper_g = np.array([80, 255, 255])
+    mask=cv2.inRange(hsv, lower_g, upper_g)
+
 
     # for r.png
-    lower_red = np.array([170, 80, 80])
-    upper_red = np.array([180, 255, 255])
-    mask1 = cv2.inRange(hsv, lower_red, upper_red)
-    lower_red = np.array([0, 80, 80])
-    upper_red = np.array([10, 255, 255])
+    # lower_red = np.array([170, 80, 80])
+    # upper_red = np.array([180, 255, 255])
+    # mask1 = cv2.inRange(hsv, lower_red, upper_red)
+    # lower_red = np.array([0, 80, 80])
+    # upper_red = np.array([10, 255, 255])
+    # mask2 = cv2.inRange(hsv, lower_red, upper_red)
+    # mask=cv2.bitwise_or(mask1,mask2)
 
-    # # for b.png
-    # lower_red = np.array([100, 40, 0])
-    # upper_red = np.array([120, 255, 255])
+    # # # for b.png
+    # lower_b = np.array([100, 40, 0])
+    # upper_b = np.array([120, 255, 255])
+    # mask=cv2.inRange(hsv, lower_b, upper_b)
 
-    mask = cv2.inRange(hsv, lower_red, upper_red)
+
     result = cv2.bitwise_and(img, img, mask=mask)
 
     kernel = np.ones((7,7), np.uint8)
@@ -48,7 +53,7 @@ def findRect(img):
     return x,y,w,h
 
 
-img = cv2.imread(os.getcwd()+"/../r3m(w).png")
+img = cv2.imread(os.getcwd()+"/../rgb.png")
 print(findRect(img))
 
 cv2.destroyAllWindows()
