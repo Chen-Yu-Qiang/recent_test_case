@@ -9,19 +9,16 @@ import threading
 import time
 box_x=0
 box_y=0
-box_w=1
+box_z=1
 box_newTime=time.time()
 is_takeoff=1
 def cb_box(data):
-    global box_lock,box_x,box_y,box_w,box_newTime
-    
-    if data.x * data.y * data.z==0:
-        return
+    global box_lock,box_x,box_y,box_z
+
     box_lock.acquire()
-    box_x=data.x
-    box_y=data.y
-    box_w=data.z
-    box_newTime=time.time()
+    box_x=data.linear.x
+    box_y=data.linear.y
+    box_z=data.linear.z
     box_lock.release()
 
 def cb_takeoff(data):
@@ -50,12 +47,11 @@ else:
 
 
 rospy.init_node('control_val_node', anonymous=True)
-box_sub = rospy.Subscriber('box_in_img', Point, cb_box)
+box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
 cmd_val_pub = rospy.Publisher('tello/cmd_vel', Twist, queue_size=1)
 x_pid_pub = rospy.Publisher('x_pid', PidState, queue_size=1)
 y_pid_pub = rospy.Publisher('y_pid', PidState, queue_size=1)
 z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
-box_pub = rospy.Publisher('from_box', Twist, queue_size=1)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
@@ -80,10 +76,9 @@ while  not rospy.is_shutdown():
         d_t = 1
 
         box_lock.acquire()
-        distance = 200 / (box_w+0.001)
-        x_now = distance
-        y_now = (((box_x-480) * distance) / 952)*(-1)
-        z_now = ((box_y-360) * distance) / 952
+        x_now = box_x
+        y_now = box_y
+        z_now = box_z
         box_lock.release()
 
 
@@ -176,11 +171,6 @@ while  not rospy.is_shutdown():
         if isSIM==0:
             cmd_val_pub.publish(cmd_val_pub_msg)
 
-        box_pub_msg=Twist()
-        box_pub_msg.linear.x = x_now
-        box_pub_msg.linear.y = y_now
-        box_pub_msg.linear.z = z_now
-        box_pub.publish(box_pub_msg)
 
 
         x_pid_pub.publish(x_pid)
