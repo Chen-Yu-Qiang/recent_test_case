@@ -15,7 +15,7 @@ def findRect(img,color):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        lower_g = np.array([30, 0, 0])
+        lower_g = np.array([30, 80, 80])
         upper_g = np.array([80, 255, 255])
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
