@@ -80,9 +80,9 @@ while  not rospy.is_shutdown():
     box_pub_g.publish(box_pub_g_msg)
     box_pub_b.publish( box_pub_b_msg)
     
-    if box_pub_g_msg.linear.x<30:
+    if box_pub_g_msg.linear.x<0.30:
         box_pub_m.publish(box_pub_g_msg)
-    elif box_pub_r_msg.linear.x<60:
+    elif box_pub_r_msg.linear.x<0.60:
         box_pub_m.publish(box_pub_r_msg)
     else:
         box_pub_m.publish(box_pub_b_msg)

@@ -59,8 +59,8 @@ def ROSdata2CV(data):
         return
 
 def cb_img(data):
-    corners, ids, img = detect(ROSdata2CV(data))
-    retval, rvec, tvec = est(corners, ids)
+    img = ROSdata2CV(data)
+    retval, rvec, tvec = est(img)
     if retval == 0:
         return 0, 0, 0
     a=rvec
@@ -97,13 +97,25 @@ def detect(img):
     corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=params)
     dr=img
     dr=aruco.drawDetectedMarkers(dr,corners,ids)
-
+    dr = aruco.drawAxis( dr, camera_matrix, dist_coeffs, rvec, tvec, aruco_marker_length_meters )
     cv2.imshow("a",dr)
     cv2.waitKey(1)
     return corners, ids, img
 
 
-def est(corners, ids):
+def est(img):
+
+    img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    #img=cv2.GaussianBlur(img, (11, 11), 0)
+    aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_100)
+    params = cv2.aruco.DetectorParameters_create()
+    params.cornerRefinementMethod = aruco.CORNER_REFINE_SUBPIX
+    params.cornerRefinementMaxIterations=100
+    params.cornerRefinementMinAccuracy=0.01
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict, parameters=params)
+
+
+
     ####for real tello by me
     # camera_matrix = np.array([[921.170702, 0.000000, 459.904354], [
     #    0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]])
@@ -122,15 +134,23 @@ def est(corners, ids):
     # dist_coeffs = np.array([0, 0, 0, 0, 0])
     
 
-    thePoint = [[0, 0.11, 0.14],[0, 0.31, 0.14],[0, 0.31, -0.06],[0, 0.11, -0.06]]
-    board_corners = [np.array(thePoint, dtype=np.float32)]
-    board_ids = np.array([0], dtype=np.int32)
+    thePoint = [[[0, -0.1, 0.55],[0, 0.1, 0.55],[0, 0.1, 0.35],[0, -0.1, 0.35]],
+                [[0, -0.1, -0.35],[0, 0.1, -0.35],[0, 0.1, -0.55],[0, -0.1, -0.55]]]
+    board_corners = [np.array(thePoint[0], dtype=np.float32),np.array(thePoint[1], dtype=np.float32)]
+    board_ids = np.array([[0],[1]], dtype=np.int32)
     board = aruco.Board_create(board_corners,
                                aruco.getPredefinedDictionary(
                                aruco.DICT_5X5_100),
                                board_ids)
     retval, rvec, tvec = aruco.estimatePoseBoard(
         corners, ids, board, camera_matrix, dist_coeffs, None, None)
+    if retval==0:
+        return 0, 0, 0
+    dr=img
+    dr=aruco.drawDetectedMarkers(dr,corners,ids)
+    dr = aruco.drawAxis( dr, camera_matrix, dist_coeffs, rvec, tvec, 0.25 )
+    cv2.imshow("a",dr)
+    cv2.waitKey(1)
     return retval, rvec, tvec
 
 

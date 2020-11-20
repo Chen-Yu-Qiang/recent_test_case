@@ -7,6 +7,8 @@ from std_msgs.msg import Empty
 from control_msgs.msg import PidState
 import threading
 import time
+import numpy as np
+
 box_x=0
 box_y=0
 box_z=1
@@ -14,11 +16,11 @@ box_newTime=time.time()
 is_takeoff=1
 def cb_box(data):
     global box_lock,box_x,box_y,box_z
-
+    ang=12*np.pi/180
     box_lock.acquire()
-    box_x=data.linear.x
+    box_x=data.linear.x*np.cos(ang) - data.linear.z*np.sin(ang)
     box_y=data.linear.y
-    box_z=data.linear.z
+    box_z=data.linear.x*np.sin(ang) + data.linear.z*np.cos(ang)
     box_lock.release()
 
 def cb_takeoff(data):
