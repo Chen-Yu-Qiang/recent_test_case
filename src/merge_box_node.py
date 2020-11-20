@@ -26,10 +26,10 @@ class box_data:
 
     def getXYZ(self,pixAT1m):
         self.lock.acquire()
-            distance = pixAT1m / (self.w+0.001)
-            x_now = distance
-            y_now = (((self.x-480) * distance) / 952)*(-1)
-            z_now = ((self.y-360) * distance) / 952
+        distance = pixAT1m / (self.w+0.001)
+        x_now = distance
+        y_now = (((self.x-480) * distance) / 952)*(-1)
+        z_now = ((self.y-360) * distance) / 952
         self.lock.release()
         box_pub_msg = Twist()
         box_pub_msg.linear.x = x_now

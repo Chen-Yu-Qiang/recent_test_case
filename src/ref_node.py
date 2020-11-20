@@ -69,4 +69,26 @@ while  not rospy.is_shutdown():
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
+        if m==3:
+            if t>=40:
+                m=4
+                t=float(0)
+            else:
+                t=t+0.05
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 4
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 0
+                ref_pub.publish(ref_pub_msg)
+        if m==4:
+            if t>=40:
+                m=5
+                t=float(0)
+            else:
+                t=t+0.05
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 0
+                ref_pub.publish(ref_pub_msg)
     rate.sleep()
