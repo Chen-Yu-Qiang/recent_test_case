@@ -37,30 +37,8 @@ while  not rospy.is_shutdown():
     if is_takeoff:
         print(t)
         if m==0:
-            if t>=45:
+            if t>=25:
                 m=1
-                t=float(0)
-            else:
-                t=t+0.05
-                ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 1
-                ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0
-                ref_pub.publish(ref_pub_msg)
-        if m==1:
-            if t>=40:
-                m=2
-                t=float(0)
-            else:
-                t=t+0.05
-                ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2
-                ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0
-                ref_pub.publish(ref_pub_msg)
-        if m==2:
-            if t>=40:
-                m=3
                 t=float(0)
             else:
                 t=t+0.05
@@ -69,9 +47,9 @@ while  not rospy.is_shutdown():
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
-        if m==3:
-            if t>=40:
-                m=4
+        if m==1:
+            if t>=10:
+                m=2
                 t=float(0)
             else:
                 t=t+0.05
@@ -80,14 +58,36 @@ while  not rospy.is_shutdown():
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
-        if m==4:
-            if t>=40:
-                m=5
+        if m==2:
+            if t>=10:
+                m=3
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 0
+                ref_pub.publish(ref_pub_msg)
+        if m==3:
+            if t>=20:
+                m=4
+                t=float(0)
+            else:
+                t=t+0.05
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 6
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 0
+                ref_pub.publish(ref_pub_msg)
+        if m==4:
+            if t>=20:
+                m=5
+                t=float(0)
+            else:
+                t=t+0.05
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 7
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
