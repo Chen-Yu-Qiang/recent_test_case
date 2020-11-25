@@ -135,9 +135,12 @@ def est(img):
     
 
     thePoint = [[[0, -0.1, 0.55],[0, 0.1, 0.55],[0, 0.1, 0.35],[0, -0.1, 0.35]],
-                [[0, -0.1, -0.35],[0, 0.1, -0.35],[0, 0.1, -0.55],[0, -0.1, -0.55]]]
-    board_corners = [np.array(thePoint[0], dtype=np.float32),np.array(thePoint[1], dtype=np.float32)]
-    board_ids = np.array([[0],[1]], dtype=np.int32)
+                [[0, -0.1, -0.35],[0, 0.1, -0.35],[0, 0.1, -0.55],[0, -0.1, -0.55]],
+                [[0, -0.54, 0.1],[0, -0.34, 0.1],[0, -0.34, -0.1],[0, -0.54, -0.1]],
+                [[0, 0.34, 0.1],[0, 0.54, 0.1],[0, 0.54, -0.1],[0, 0.34, -0.1]]]
+    board_corners = [np.array(thePoint[0], dtype=np.float32),np.array(thePoint[1], dtype=np.float32),
+                    np.array(thePoint[2], dtype=np.float32),np.array(thePoint[3], dtype=np.float32)]
+    board_ids = np.array([[0],[1],[2],[3]], dtype=np.int32)
     board = aruco.Board_create(board_corners,
                                aruco.getPredefinedDictionary(
                                aruco.DICT_5X5_100),
