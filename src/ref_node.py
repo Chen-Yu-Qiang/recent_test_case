@@ -37,24 +37,24 @@ while  not rospy.is_shutdown():
     if is_takeoff:
         print(t)
         if m==0:
-            if t>=25:
+            if t>=15:
                 m=1
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.x = 1.5
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
         if m==1:
-            if t>=10:
-                m=2
+            if t>=20:
+                m=5
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 4
+                ref_pub_msg.linear.x = 2.5
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0
                 ref_pub.publish(ref_pub_msg)
