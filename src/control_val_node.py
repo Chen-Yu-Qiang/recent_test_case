@@ -115,6 +115,19 @@ while  not rospy.is_shutdown():
         kp = 1.5
         ki = 0
         kd = 0.5
+
+        if abs(err_x)>0.6:
+            kp = 2
+            ki = 0
+            kd = 0.5
+        elif abs(err_x)>0.3:
+            kp = 1.5
+            ki = 0
+            kd = 0.5
+        else:
+            kp = 1
+            ki = 0
+            kd = 0.5
         cmd_x=kp*err_x+ki*err_x_int+kd*err_x_dif
         x_pid.error=err_x
         x_pid.p_error=err_x
