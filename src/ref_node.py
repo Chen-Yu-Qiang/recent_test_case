@@ -27,7 +27,7 @@ rospy.init_node('ref_node', anonymous=True)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_pub = rospy.Publisher('ref', Twist, queue_size=1)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
-rate = rospy.Rate(20)
+rate = rospy.Rate(30)
 
 
 
@@ -35,7 +35,7 @@ m=0
 
 while  not rospy.is_shutdown():
     if is_takeoff:
-        print(t)
+        #print(t)
         if m==0:
             if t>=15:
                 m=1

@@ -21,13 +21,13 @@ class box_data:
         self.x = data.x
         self.y = data.y
         self.w = data.z
-        self.newTime = time.time()
+        self.newtime = time.time()
         self.lock.release()
 
     def getXYZ(self,pixAT1m):
         self.lock.acquire()
         distance = pixAT1m / (self.w+0.001)
-        x_now = distance
+        x_now = min(distance,10)
         y_now = (((self.x-480) * distance) / 952)*(-1)
         z_now = ((self.y-360) * distance) / 952
         self.lock.release()
@@ -36,6 +36,12 @@ class box_data:
         box_pub_msg.linear.y = y_now
         box_pub_msg.linear.z = z_now
         return box_pub_msg
+    
+    def isTimeOut(self):
+        if (time.time()-self.newtime)>0.1:
+            return True
+        else:
+            return False
 
 
 
@@ -66,25 +72,29 @@ box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
 box_pub_m = rospy.Publisher('from_box_merge', Twist, queue_size=1)
-rate = rospy.Rate(20)
+rate = rospy.Rate(30)
 
 
 while  not rospy.is_shutdown():
 
 
-
-    box_pub_r_msg=box_data_r.getXYZ(191)
-    box_pub_g_msg=box_data_g.getXYZ(69)
-    box_pub_b_msg=box_data_b.getXYZ(450)
-    box_pub_r.publish(box_pub_r_msg)
-    box_pub_g.publish(box_pub_g_msg)
-    box_pub_b.publish( box_pub_b_msg)
-    
-    if box_pub_g_msg.linear.x<0.30:
-        box_pub_m.publish(box_pub_g_msg)
-    elif box_pub_r_msg.linear.x<0.60:
-        box_pub_m.publish(box_pub_r_msg)
+    if box_data_r.isTimeOut() or box_data_g.isTimeOut() or box_data_b.isTimeOut():
+        mymsg=Twist()
+        mymsg.linear.z=-100
+        box_pub_m.publish(mymsg)
     else:
-        box_pub_m.publish(box_pub_b_msg)
+        box_pub_r_msg=box_data_r.getXYZ(191)
+        box_pub_g_msg=box_data_g.getXYZ(69)
+        box_pub_b_msg=box_data_b.getXYZ(450)
+        box_pub_r.publish(box_pub_r_msg)
+        box_pub_g.publish(box_pub_g_msg)
+        box_pub_b.publish( box_pub_b_msg)
+        
+        if box_pub_g_msg.linear.x<0.30:
+            box_pub_m.publish(box_pub_g_msg)
+        elif box_pub_r_msg.linear.x<0.60:
+            box_pub_m.publish(box_pub_r_msg)
+        else:
+            box_pub_m.publish(box_pub_b_msg)
     
     rate.sleep()

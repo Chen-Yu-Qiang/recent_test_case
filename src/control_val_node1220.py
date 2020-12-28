@@ -57,7 +57,7 @@ z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
-rate = rospy.Rate(20)
+rate = rospy.Rate(30)
 
 box_lock=threading.Lock()
 ref_lock=threading.Lock()

@@ -14,9 +14,14 @@ box_y=0
 box_z=1
 box_newTime=time.time()
 is_takeoff=1
+l_flag=0
 def cb_box(data):
-    global box_lock,box_x,box_y,box_z
+    global box_lock,box_x,box_y,box_z,l_flag
     ang=12*np.pi/180
+    if data.linear.z<-10:
+        l_flag=1
+        return
+    l_flag=0
     box_lock.acquire()
     box_x=data.linear.x*np.cos(ang) - data.linear.z*np.sin(ang)
     box_y=data.linear.y
@@ -57,7 +62,7 @@ z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
-rate = rospy.Rate(20)
+rate = rospy.Rate(30)
 
 box_lock=threading.Lock()
 ref_lock=threading.Lock()
@@ -168,10 +173,14 @@ while  not rospy.is_shutdown():
 
 
 
-
+        if l_flag==0:
         cmd_val_pub_msg.linear.x = cmd_y
         cmd_val_pub_msg.linear.y = -cmd_x
         cmd_val_pub_msg.linear.z = cmd_z
+        else:
+        cmd_val_pub_msg.linear.x = 0
+        cmd_val_pub_msg.linear.y = 0
+        cmd_val_pub_msg.linear.z = 0
 
 
         if abs(cmd_val_pub_msg.linear.x)>2:
@@ -181,7 +190,7 @@ while  not rospy.is_shutdown():
         if abs(cmd_val_pub_msg.linear.z)>2:
             cmd_val_pub_msg.linear.z=cmd_val_pub_msg.linear.z/abs(cmd_val_pub_msg.linear.z)*2
         
-        print(cmd_val_pub_msg.linear)
+        #print(cmd_val_pub_msg.linear)
 
         if isSIM==0:
             cmd_val_pub.publish(cmd_val_pub_msg)
