@@ -121,17 +121,13 @@ while  not rospy.is_shutdown():
         ki = 0
         kd = 0.5
 
-        if abs(err_x)>0.6:
-            kp = 2
-            ki = 0
-            kd = 0.5
-        elif abs(err_x)>0.3:
-            kp = 1.5
-            ki = 0
-            kd = 0.5
+        if abs(err_x)>0.7:
+            kp = 10000
+        elif abs(err_x)>0.55:
+            kp = -10000
         else:
             kp = 1
-            ki = 0
+            ki = 0.1
             kd = 0.5
         cmd_x=kp*err_x+ki*err_x_int+kd*err_x_dif
         x_pid.error=err_x
@@ -174,13 +170,13 @@ while  not rospy.is_shutdown():
 
 
         if l_flag==0:
-        cmd_val_pub_msg.linear.x = cmd_y
-        cmd_val_pub_msg.linear.y = -cmd_x
-        cmd_val_pub_msg.linear.z = cmd_z
+            cmd_val_pub_msg.linear.x = cmd_y
+            cmd_val_pub_msg.linear.y = -cmd_x
+            cmd_val_pub_msg.linear.z = cmd_z
         else:
-        cmd_val_pub_msg.linear.x = 0
-        cmd_val_pub_msg.linear.y = 0
-        cmd_val_pub_msg.linear.z = 0
+            cmd_val_pub_msg.linear.x = 0
+            cmd_val_pub_msg.linear.y = 0
+            cmd_val_pub_msg.linear.z = 0
 
 
         if abs(cmd_val_pub_msg.linear.x)>2:
