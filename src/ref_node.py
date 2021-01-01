@@ -45,7 +45,7 @@ while  not rospy.is_shutdown():
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 1.5
                 ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0
+                ref_pub_msg.linear.z = 0.9
                 ref_pub.publish(ref_pub_msg)
         if m==1:
             if t>=20:
@@ -56,7 +56,7 @@ while  not rospy.is_shutdown():
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 2.5
                 ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0
+                ref_pub_msg.linear.z = 0.9
                 ref_pub.publish(ref_pub_msg)
         if m==2:
             if t>=10:
@@ -67,7 +67,7 @@ while  not rospy.is_shutdown():
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 5
                 ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0
+                ref_pub_msg.linear.z = 0.9
                 ref_pub.publish(ref_pub_msg)
         if m==3:
             if t>=20:

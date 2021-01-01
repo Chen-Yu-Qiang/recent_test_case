@@ -34,7 +34,7 @@ class box_data:
         box_pub_msg = Twist()
         box_pub_msg.linear.x = x_now
         box_pub_msg.linear.y = y_now
-        box_pub_msg.linear.z = z_now
+        box_pub_msg.linear.z = z_now+0.9
         return box_pub_msg
     
     def isTimeOut(self):
@@ -88,7 +88,7 @@ while  not rospy.is_shutdown():
         box_pub_b_msg=box_data_b.getXYZ(450)
         box_pub_r.publish(box_pub_r_msg)
         box_pub_g.publish(box_pub_g_msg)
-        box_pub_b.publish( box_pub_b_msg)
+        box_pub_b.publish(box_pub_b_msg)
         
         if box_pub_g_msg.linear.x<0.30:
             box_pub_m.publish(box_pub_g_msg)
