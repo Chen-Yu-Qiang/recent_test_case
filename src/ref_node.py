@@ -35,7 +35,7 @@ m=0
 
 while  not rospy.is_shutdown():
     if is_takeoff:
-        #print(t)
+        print(t)
         if m==0:
             if t>=25:
                 m=1

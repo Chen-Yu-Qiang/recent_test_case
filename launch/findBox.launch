@@ -3,10 +3,10 @@
     <param name="isSIM" value="0"/>
     <node pkg="image_transport" type="republish" name="republish" output="screen" args="h264 in:=/tello/image_raw raw out:=/tello_raw"/>
     <node pkg="recent_test_case" type="findBoxOnLine.py" name="findBoxOnLine" output="screen"/>
-    <node pkg="recent_test_case" type="control_val_node.py" name="control_val_node" output="screen"/>
+    <node pkg="recent_test_case" type="control_val_node_kf.py" name="control_val_node_kf" output="screen"/>
     <node pkg="recent_test_case" type="merge_box_node.py" name="merge_box_node" output="screen"/>
     <node pkg="recent_test_case" type="imuint.py" name="imuint" output="screen"/>
     <node pkg="recent_test_case" type="ref_node.py" name="ref_node" output="screen"/>
-    <node pkg="recent_test_case" type="control_op_node.py" name="control_op_node" output="screen" launch-prefix="xterm -geometry 150x20+0+0 -e" />
+    <node pkg="recent_test_case" type="control_op_node.py" name="control_op_node" output="screen" launch-prefix="xterm -geometry 150x20+450+0 -e" />
     <node pkg="rosbag" type="record" name="myrosbag"  output="screen" args="-a -x /tello_raw" />
 </launch>
