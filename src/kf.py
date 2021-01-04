@@ -4,7 +4,7 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
-
+import time
 
 
 def cb_box(data):
@@ -36,9 +36,21 @@ def cb_odom(data):
     K=np.dot(np.dot(P,np.transpose(H2)),np.linalg.inv(S))
     X=X+np.dot(K,Y)
     P=np.dot(np.eye(6)-np.dot(K,H2),P)
+last_time=time.time()
+last_data=0
+ax=0
+ay=0
+az=0
+def cb_cmd(data):
+    global ax,ay,az,last_data,last_time
+    delta_t=time.time()-last_time
+    ax=(data.linear.x-last_data.linear.x)/delta_t
+    ay=(data.linear.y-last_data.linear.y)/delta_t
+    az=(data.linear.z-last_data.linear.z)/delta_t
+    last_data=data
+    last_time=time.time()
 
-
-dt=1.0/100
+dt=1.0/50
 F =np.array(
    [[1,dt,0,0,0,0],
     [0,1,0,0,0,0],
@@ -56,8 +68,16 @@ H2=np.array(
     [0,0,0,1,0,0],
     [0,0,0,0,0,1]])
 
-Q = np.eye(6)*0.01 
-R1 = np.eye(3)*0.001 
+B=np.array(
+   [[0,0,0],
+    [dt,0,0],
+    [0,0,0],
+    [0,dt,0],
+    [0,0,0],
+    [0,0,dt]])
+
+Q = np.eye(6) 
+R1 = np.eye(3)
 R2 = np.eye(3) 
 P = np.zeros((6,6))
 X=np.zeros((6,1))
@@ -65,6 +85,8 @@ X[0]=1.5
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
+
+cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
 
@@ -72,8 +94,8 @@ kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
 rate = rospy.Rate(1.0/dt)
 while  not rospy.is_shutdown():
 
-
-    X = np.dot(F,X)
+    U=np.array([[ax],[ay],[az]]);
+    X = np.dot(F,X)+np.dot(B,U)
     P = np.dot(np.dot(F,P),np.transpose(F)) + Q
 
 
