@@ -37,7 +37,10 @@ def cb_odom(data):
     X=X+np.dot(K,Y)
     P=np.dot(np.eye(6)-np.dot(K,H2),P)
 last_time=time.time()
-last_data=0
+last_data=Twist()
+last_data.linear.x=0
+last_data.linear.y=0
+last_data.linear.z=0
 ax=0
 ay=0
 az=0
@@ -50,7 +53,7 @@ def cb_cmd(data):
     last_data=data
     last_time=time.time()
 
-dt=1.0/50
+dt=1.0/31
 F =np.array(
    [[1,dt,0,0,0,0],
     [0,1,0,0,0,0],
@@ -94,7 +97,7 @@ kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
 rate = rospy.Rate(1.0/dt)
 while  not rospy.is_shutdown():
 
-    U=np.array([[ax],[ay],[az]]);
+    U=np.array([[ax],[ay],[az]])
     X = np.dot(F,X)+np.dot(B,U)
     P = np.dot(np.dot(F,P),np.transpose(F)) + Q
 
