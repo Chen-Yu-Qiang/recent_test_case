@@ -72,17 +72,17 @@ H2=np.array(
     [0,0,0,0,0,1]])
 
 B=np.array(
-   [[0,0,0],
+   [[0.5*dt*dt,0,0],
     [dt,0,0],
-    [0,0,0],
+    [0,0.5*dt*dt,0],
     [0,dt,0],
-    [0,0,0],
+    [0,0,0.5*dt*dt],
     [0,0,dt]])
 
 Q = np.eye(6) 
 R1 = np.eye(3)
 R2 = np.eye(3) 
-P = np.zeros((6,6))
+P = np.eye(6)
 X=np.zeros((6,1))
 X[0]=1.5
 rospy.init_node('kf', anonymous=True)
