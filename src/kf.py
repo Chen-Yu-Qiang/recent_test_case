@@ -4,8 +4,9 @@ import rospy
 import numpy as np
 from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
+from sensor_msgs.msg import Imu
 import time
-
+import std_msgs.msg import Float32
 
 def cb_box(data):
     global P,X
@@ -46,10 +47,19 @@ ay=0
 az=0
 def cb_cmd(data):
     global ax,ay,az,last_data,last_time
+    return
     delta_t=time.time()-last_time
     ax=(data.linear.x-last_data.linear.x)/delta_t
     ay=(data.linear.y-last_data.linear.y)/delta_t
     az=(data.linear.z-last_data.linear.z)/delta_t
+    last_data=data
+    last_time=time.time()
+def cb_imu(data):
+    global ax,ay,az,last_data,last_time
+    delta_t=time.time()-last_time
+    ax=data.linear_acceleration.x*10
+    ay=data.linear_acceleration.y*10
+    az=data.linear_acceleration.z*10-9.8
     last_data=data
     last_time=time.time()
 
@@ -89,14 +99,15 @@ rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
 
+cmd_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
-
+cal_time_pub = rospy.Publisher('cal_time', Float32 , queue_size=1)
 
 rate = rospy.Rate(1.0/dt)
 while  not rospy.is_shutdown():
-
+    t=time.time()
     U=np.array([[ax],[ay],[az]])
     X = np.dot(F,X)+np.dot(B,U)
     P = np.dot(np.dot(F,P),np.transpose(F)) + Q
@@ -113,5 +124,9 @@ while  not rospy.is_shutdown():
     kf_v_msg.linear.z=X[5]
     kf_v_pub.publish(kf_v_msg)
 
+    
+    cal_time_msg=Float32()
+    cal_time_msg.data=time.time()-t
+    cal_time_pub.publish(cal_time_msg)
     
     rate.sleep()

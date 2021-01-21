@@ -116,10 +116,7 @@ while  not rospy.is_shutdown():
         err_z_dif = (err_z - err_z_last) / d_t
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
-        
-        kp = 1.5
-        ki = 0
-        kd = 0.5
+
 
         if abs(err_x)>0.7:
             kp = 10000
@@ -129,6 +126,10 @@ while  not rospy.is_shutdown():
             kp = 1
             ki = 0.1
             kd = 0.5
+            
+        kp = 1.5
+        ki = 0.01
+        kd = 0.5
         cmd_x=kp*err_x+ki*err_x_int+kd*err_x_dif
         x_pid.error=err_x
         x_pid.p_error=err_x
