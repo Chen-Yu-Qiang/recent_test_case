@@ -6,7 +6,7 @@ from geometry_msgs.msg import Twist
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 import time
-import std_msgs.msg import Float32
+from std_msgs.msg import Float32
 
 def cb_box(data):
     global P,X
@@ -92,7 +92,7 @@ B=np.array(
 Q = np.eye(6) 
 R1 = np.eye(3)
 R2 = np.eye(3) 
-P = np.eye(6)
+P = np.eye(6) 
 X=np.zeros((6,1))
 X[0]=1.5
 rospy.init_node('kf', anonymous=True)
