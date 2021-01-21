@@ -89,7 +89,7 @@ B=np.array(
     [0,0,0.5*dt*dt],
     [0,0,dt]])
 
-Q = np.eye(6) 
+Q = np.eye(6)
 R1 = np.eye(3)
 R2 = np.eye(3) 
 P = np.eye(6) 
@@ -99,7 +99,7 @@ rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
 
-cmd_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
+imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
@@ -107,7 +107,7 @@ cal_time_pub = rospy.Publisher('cal_time', Float32 , queue_size=1)
 
 rate = rospy.Rate(1.0/dt)
 while  not rospy.is_shutdown():
-    t=time.time()
+    #t=time.time()
     U=np.array([[ax],[ay],[az]])
     X = np.dot(F,X)+np.dot(B,U)
     P = np.dot(np.dot(F,P),np.transpose(F)) + Q
@@ -125,8 +125,8 @@ while  not rospy.is_shutdown():
     kf_v_pub.publish(kf_v_msg)
 
     
-    cal_time_msg=Float32()
-    cal_time_msg.data=time.time()-t
-    cal_time_pub.publish(cal_time_msg)
+    #cal_time_msg=Float32()
+    #cal_time_msg.data=time.time()-t
+    #cal_time_pub.publish(cal_time_msg)
     
     rate.sleep()

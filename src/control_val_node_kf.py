@@ -112,8 +112,8 @@ while  not rospy.is_shutdown():
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
         
-        kp = 1.5
-        ki = 0.01
+        kp = 1
+        ki = 0.0
         kd = 0.5
 
         #if abs(err_x)>0.7:

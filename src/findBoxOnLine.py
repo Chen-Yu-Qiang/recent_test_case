@@ -7,6 +7,7 @@ import rospy
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point
 from cv_bridge import CvBridge, CvBridgeError
+import time
 def findRect(img,color):
     def nothing(data):
         pass
@@ -64,6 +65,8 @@ class image_converter:
 
     def callback(self,data):
         try:
+            if not time.time()%1<0.5:
+                return
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             x, y, w, h = findRect(cv_image,"r")
             # print(x,y,w,h)
