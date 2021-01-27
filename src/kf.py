@@ -59,7 +59,7 @@ def cb_imu(data):
     delta_t=time.time()-last_time
     ax=data.linear_acceleration.x*10
     ay=data.linear_acceleration.y*10
-    az=data.linear_acceleration.z*10-9.8
+    az=data.linear_acceleration.z*10+9.8
     last_data=data
     last_time=time.time()
 
