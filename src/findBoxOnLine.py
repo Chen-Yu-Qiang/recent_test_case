@@ -65,8 +65,8 @@ class image_converter:
 
     def callback(self,data):
         try:
-            if not time.time()%1<0.5:
-                return
+            # if not time.time()%1<0.5:
+            #    return
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             x, y, w, h = findRect(cv_image,"r")
             # print(x,y,w,h)

@@ -116,9 +116,9 @@ while  not rospy.is_shutdown():
     P = np.dot(np.dot(F,P),np.transpose(F)) + Q
 
     kf_pmat_pub_msg=Twist()
-    kf_pmat_pub_msg.linear.x=P[0][0];
-    kf_pmat_pub_msg.linear.y=P[2][2];
-    kf_pmat_pub_msg.linear.z=P[4][4];
+    kf_pmat_pub_msg.linear.x=P[0][0]
+    kf_pmat_pub_msg.linear.y=P[2][2]
+    kf_pmat_pub_msg.linear.z=P[4][4]
     kf_pmat_pub.publish(kf_pmat_pub_msg)
 
 

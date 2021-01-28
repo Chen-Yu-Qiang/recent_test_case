@@ -48,7 +48,7 @@ while  not rospy.is_shutdown():
                 ref_pub_msg.linear.z = 0.9
                 ref_pub.publish(ref_pub_msg)
         if m==1:
-            if t>=20:
+            if t>=200:
                 m=5
                 t=float(0)
             else:
