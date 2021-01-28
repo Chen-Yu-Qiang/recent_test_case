@@ -78,7 +78,7 @@ rate = rospy.Rate(30)
 while  not rospy.is_shutdown():
 
 
-    if box_data_r.isTimeOut() or box_data_g.isTimeOut() or box_data_b.isTimeOut():
+    if box_data_b.isTimeOut():
         mymsg=Twist()
         mymsg.linear.z=-100
         box_pub_m.publish(mymsg)

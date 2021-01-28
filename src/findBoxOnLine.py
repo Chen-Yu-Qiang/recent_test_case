@@ -65,8 +65,8 @@ class image_converter:
 
     def callback(self,data):
         try:
-            # if not time.time()%1<0.5:
-            #    return
+            if not time.time()%5<0.5:
+                return
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             x, y, w, h = findRect(cv_image,"r")
             # print(x,y,w,h)
@@ -105,7 +105,7 @@ class image_converter:
 
 ic = image_converter()
 rospy.init_node('image_converter', anonymous=True)
-pub_r = rospy.Publisher('box_in_img_r', Point, queue_size=10)
-pub_g = rospy.Publisher('box_in_img_g', Point, queue_size=10)
-pub_b = rospy.Publisher('box_in_img_b', Point, queue_size=10)
+pub_r = rospy.Publisher('box_in_img_r', Point, queue_size=1)
+pub_g = rospy.Publisher('box_in_img_g', Point, queue_size=1)
+pub_b = rospy.Publisher('box_in_img_b', Point, queue_size=1)
 rospy.spin()
