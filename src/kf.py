@@ -24,7 +24,7 @@ def cb_box(data):
     if max(abs(np.dot(K,Y)))>0.5:
         return
     X=X+np.dot(K,Y)
-    P=np.dot(np.eye(6)-np.dot(K,H1),P)
+    P=np.dot(np.eye(9)-np.dot(K,H1),P)
 
 def cb_odom(data):
     global P,X
@@ -38,7 +38,7 @@ def cb_odom(data):
     S=np.dot(np.dot(H2,P),np.transpose(H2))+R2
     K=np.dot(np.dot(P,np.transpose(H2)),np.linalg.inv(S))
     X=X+np.dot(K,Y)
-    P=np.dot(np.eye(6)-np.dot(K,H2),P)
+    P=np.dot(np.eye(9)-np.dot(K,H2),P)
 last_time=time.time()
 last_data=Twist()
 last_data.linear.x=0
@@ -66,22 +66,57 @@ def cb_imu(data):
     last_time=time.time()
 
 dt=1.0/31
+# F =np.array(
+#    [[1,dt,0,0,0,0],
+#     [0,1,0,0,0,0],
+#     [0,0,1,dt,0,0],
+#     [0,0,0,1,0,0],
+#     [0,0,0,0,1,dt],
+#     [0,0,0,0,0,1]])
+
+# H1=np.array(
+#    [[1,0,0,0,0,0],
+#     [0,0,1,0,0,0],
+#     [0,0,0,0,1,0]])
+# H2=np.array(
+#    [[0,1,0,0,0,0],
+#     [0,0,0,1,0,0],
+#     [0,0,0,0,0,1]])
+
+# B=np.array(
+#    [[0.5*dt*dt,0,0],
+#     [dt,0,0],
+#     [0,0.5*dt*dt,0],
+#     [0,dt,0],
+#     [0,0,0.5*dt*dt],
+#     [0,0,dt]])
+
+# Q = np.eye(6)*0.01
+# R1 = np.eye(3)
+# R2 = np.eye(3) 
+# P = np.eye(6) 
+# X=np.zeros((6,1))
+
+
 F =np.array(
-   [[1,dt,0,0,0,0],
-    [0,1,0,0,0,0],
-    [0,0,1,dt,0,0],
-    [0,0,0,1,0,0],
-    [0,0,0,0,1,dt],
-    [0,0,0,0,0,1]])
+   [[1,dt,0,0,0,0,0,0,0],
+    [0,1,0,0,0,0,0,0,0],
+    [0,0,1,dt,0,0,0,0,0],
+    [0,0,0,1,0,0,0,0,0],
+    [0,0,0,0,1,dt,0,0,0],
+    [0,0,0,0,0,1,0,0,0],
+    [0,0,0,0,0,0,1,0,0],
+    [0,0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,0,0,1]])
 
 H1=np.array(
-   [[1,0,0,0,0,0],
-    [0,0,1,0,0,0],
-    [0,0,0,0,1,0]])
+   [[1,0,0,0,0,0,0,0,0],
+    [0,0,1,0,0,0,0,0,0],
+    [0,0,0,0,1,0,0,0,0]])
 H2=np.array(
-   [[0,1,0,0,0,0],
-    [0,0,0,1,0,0],
-    [0,0,0,0,0,1]])
+   [[0,1,0,0,0,0,1,0,0],
+    [0,0,0,1,0,0,0,1,0],
+    [0,0,0,0,0,1,0,0,1]])
 
 B=np.array(
    [[0.5*dt*dt,0,0],
@@ -89,13 +124,19 @@ B=np.array(
     [0,0.5*dt*dt,0],
     [0,dt,0],
     [0,0,0.5*dt*dt],
-    [0,0,dt]])
+    [0,0,dt],
+    [0,0,0],
+    [0,0,0],
+    [0,0,0]])
 
-Q = np.eye(6)*0.01
+Q = np.eye(9)*0.01
+Q[6][6]=0.0001
+Q[7][7]=0.0001
+Q[8][8]=0.0001
 R1 = np.eye(3)
 R2 = np.eye(3) 
-P = np.eye(6) 
-X=np.zeros((6,1))
+P = np.eye(9) 
+X=np.zeros((9,1))
 X[0]=1.5
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
@@ -105,6 +146,7 @@ box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
 cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_pmat_pub = rospy.Publisher('kf_pmat', Twist, queue_size=1)
+kf_vmean_pub = rospy.Publisher('kf_vmean', Twist, queue_size=1)
 kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
 cal_time_pub = rospy.Publisher('cal_time', Float32 , queue_size=1)
 
@@ -133,6 +175,12 @@ while  not rospy.is_shutdown():
     kf_v_msg.linear.z=X[5]
     kf_v_pub.publish(kf_v_msg)
 
+    kf_vmean_msg=Twist()
+    kf_vmean_msg.linear.x=X[6]
+    kf_vmean_msg.linear.y=X[7]
+    kf_vmean_msg.linear.z=X[8]
+    kf_vmean_pub.publish(kf_vmean_msg)
+    
     
     #cal_time_msg=Float32()
     #cal_time_msg.data=time.time()-t

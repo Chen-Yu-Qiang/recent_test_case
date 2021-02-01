@@ -6,8 +6,35 @@ import cv2
 import rospy
 from sensor_msgs.msg import Image
 from geometry_msgs.msg import Point
+from geometry_msgs.msg import Twist
+from tello_driver.msg import TelloStatus
 from cv_bridge import CvBridge, CvBridgeError
 import time
+
+box_x=0
+box_y=0
+box_z=1
+x_d = 1
+y_d = 0
+z_d = 0
+power_last=100
+def cb_box(data):
+    global box_x,box_y,box_z
+    box_x=data.linear.x
+    box_y=data.linear.y
+    box_z=data.linear.z
+
+
+def cb_ref(data):
+    global x_d,y_d,z_d
+    x_d=data.linear.x
+    y_d=data.linear.y
+    z_d=data.linear.z
+
+def cb_power(data):
+    global power_last
+    power_last=data.battery_percentage
+
 def findRect(img,color):
     def nothing(data):
         pass
@@ -62,12 +89,14 @@ class image_converter:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/tello_raw",Image,self.callback)
+        self.bgimg = cv2.imread("/home/yuqiang/catkin_ws4/src/recent_test_case/src/bg.png")
 
     def callback(self,data):
         try:
             if not time.time()%5<0.5:
                 return
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+
             x, y, w, h = findRect(cv_image,"r")
             # print(x,y,w,h)
             p=Point()
@@ -75,7 +104,7 @@ class image_converter:
             p.y=y+h/2
             p.z=w
             pub_r.publish(p)
-            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (255,0,0), 5) 
+            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (0,0,255), 5) 
 
             x, y, w, h = findRect(cv_image,"g")
             # print(x,y,w,h)
@@ -93,11 +122,18 @@ class image_converter:
             p.y=y+h/2
             p.z=w
             pub_b.publish(p)
-            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (0,0,255), 5) 
+            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (255,0,0), 5) 
             addbox=cv2.circle(addbox, (480,360), 5, 255)
 
-
-            cv2.imshow('addbox', addbox)
+            imgAndState = np.hstack((addbox,self.bgimg))
+            imgAndState = cv2.putText(imgAndState,str(power_last),(1130,200),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(box_y),(1130,320),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(box_z),(1130,360),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(x_d),(1130,435),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(y_d),(1130,475),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(z_d),(1130,515),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            cv2.imshow('addbox', imgAndState)
             cv2.waitKey(1)
         except CvBridgeError as e:
             print(e)
@@ -108,4 +144,7 @@ rospy.init_node('image_converter', anonymous=True)
 pub_r = rospy.Publisher('box_in_img_r', Point, queue_size=1)
 pub_g = rospy.Publisher('box_in_img_g', Point, queue_size=1)
 pub_b = rospy.Publisher('box_in_img_b', Point, queue_size=1)
+ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
+box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
+power_sub = rospy.Subscriber('tello/status', TelloStatus, cb_power)
 rospy.spin()
