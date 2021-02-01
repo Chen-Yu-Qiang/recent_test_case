@@ -43,23 +43,23 @@ def findRect(img,color):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        lower_g = np.array([30, 80, 80])
-        upper_g = np.array([80, 255, 255])
+        lower_g = np.array([40, 62, 100])
+        upper_g = np.array([70, 255, 185])
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
 
     if color=="r":
-        lower_red = np.array([170, 80, 80])
-        upper_red = np.array([180, 255, 255])
+        lower_red = np.array([176, 174, 119])
+        upper_red = np.array([179, 255, 169])
         mask1 = cv2.inRange(hsv, lower_red, upper_red)
-        lower_red = np.array([0, 80, 80])
-        upper_red = np.array([10, 255, 255])
+        lower_red = np.array([0, 174, 119])
+        upper_red = np.array([8, 255, 169])
         mask2 = cv2.inRange(hsv, lower_red, upper_red)
         mask=cv2.bitwise_or(mask1,mask2)
 
     if color=="b":
-        lower_b = np.array([100, 40, 0])
-        upper_b = np.array([120, 255, 255])
+        lower_b = np.array([98, 140, 142])
+        upper_b = np.array([102, 178, 165])
         mask=cv2.inRange(hsv, lower_b, upper_b)
 
 
