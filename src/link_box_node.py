@@ -50,8 +50,9 @@ class box_data:
 
 def get_deltaXYZ(p1,p2):
     delta_msg = Twist()
-    
-    if p1.isTimeOut() or p2.isTimeOut():
+    x_margin = 60
+    y_margin = 60
+    if p1.isTimeOut() or p2.isTimeOut() or p1.x>960-x_margin or p1.x<x_margin or p1.y>720-y_margin or p1.y<y_margin:
         delta_msg.linear.x = 0
         delta_msg.linear.y = 0
         delta_msg.linear.z = 0
@@ -99,23 +100,32 @@ rate = rospy.Rate(30)
 
 
 while  not rospy.is_shutdown():
-
     if not box_data_r.isTimeOut():
         box_pub_r_msg=box_data_r.getXYZ(191)
         box_pub_r.publish(box_pub_r_msg)
+    if not box_data_g.isTimeOut():
+        box_pub_g_msg=box_data_g.getXYZ(191)
+        box_pub_g.publish(box_pub_g_msg)
+    if not box_data_b.isTimeOut():
+        box_pub_b_msg=box_data_b.getXYZ(191)
+        box_pub_b.publish(box_pub_b_msg)
+
+
+    if not box_data_r.isTimeOut():
+        box_pub_r_msg=box_data_r.getXYZ(191)
         box_pub_m.publish(box_pub_r_msg)
         if not box_data_g.isTimeOut():
             box_pub_r2g.publish(get_deltaXYZ(box_data_r,box_data_g))
+            if not box_data_b.isTimeOut():
+                box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_g.isTimeOut():
         box_pub_g_msg=box_data_g.getXYZ(191)
-        box_pub_g.publish(box_pub_g_msg)
         box_pub_m.publish(box_pub_g_msg)
         if not box_data_b.isTimeOut():
             box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_b.isTimeOut():
         box_pub_b_msg=box_data_b.getXYZ(191)
         box_pub_m.publish(box_pub_b_msg)
-        box_pub_b.publish(box_pub_b_msg)
 
     
     rate.sleep()

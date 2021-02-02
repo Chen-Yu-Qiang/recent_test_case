@@ -39,7 +39,7 @@ def findRect(img,color):
     def nothing(data):
         pass
 
-    ampm=14
+    ampm=25
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
@@ -57,9 +57,13 @@ def findRect(img,color):
             # 14 pm
             lower_g = np.array([37, 180, 43])
             upper_g = np.array([43, 202, 56])
+        elif ampm== 17:
+            # 17 pm
+            lower_g = np.array([41, 167, 69])
+            upper_g = np.array([45, 213, 75])
         elif ampm==25:
-            lower_g = np.array([39, 62, 0])
-            upper_g = np.array([70, 255, 255])
+            lower_g = np.array([37, 159, 0])
+            upper_g = np.array([47, 223, 255])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
@@ -93,12 +97,21 @@ def findRect(img,color):
             upper_red = np.array([2, 255, 52])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)   
-        elif ampm==25:
-            lower_red = np.array([176, 66, 0])
-            upper_red = np.array([179, 255, 255])
+        elif ampm==17:
+        # 17 pm
+            lower_red = np.array([178, 241, 51])
+            upper_red = np.array([179, 255, 60])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 66, 0])
-            upper_red = np.array([8, 255, 255])
+            lower_red = np.array([0, 241, 51])
+            upper_red = np.array([1, 255, 60])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)   
+        elif ampm==25:
+            lower_red = np.array([176, 174, 30])
+            upper_red = np.array([179, 255, 169])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 174, 30])
+            upper_red = np.array([8, 255, 169])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)        
 
@@ -116,10 +129,13 @@ def findRect(img,color):
         elif ampm==14:        
             # 14 pm
             lower_b = np.array([97, 174, 59])
-            upper_b = np.array([104, 211, 74])      
-        elif ampm==25:        
-            # 10am
-            lower_b = np.array([93, 56, 0])
+            upper_b = np.array([104, 211, 74])        
+        elif ampm==17:        
+            # 17 pm
+            lower_b = np.array([97, 166, 75])
+            upper_b = np.array([101, 192, 89])      
+        elif ampm==25:
+            lower_b = np.array([93, 100, 0])
             upper_b = np.array([104, 255, 255])
         mask=cv2.inRange(hsv, lower_b, upper_b)
 
@@ -137,7 +153,8 @@ def findRect(img,color):
     A_max=0
     c_max=None
     for c in contours:
-        if cv2.contourArea(c)>A_max:
+        __, _, w1, h1 = cv2.boundingRect(c)
+        if cv2.contourArea(c)>A_max and w1>50 and h1>70 and (1.0*h1/w1)<(3.0/2)*1.2 and (1.0*h1/w1)>(3.0/2)*0:
             A_max=cv2.contourArea(c)
             c_max=c
     
