@@ -39,7 +39,7 @@ def findRect(img,color):
     def nothing(data):
         pass
 
-    ampm=25
+    ampm=14
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
