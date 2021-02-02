@@ -47,12 +47,16 @@ def findRect(img,color):
         if ampm==20:
             
             # 20 pm
-            lower_g = np.array([40, 62, 100])
-            upper_g = np.array([70, 255, 185])
+            lower_g = np.array([40, 159, 139])
+            upper_g = np.array([47, 223, 162])
         elif ampm==10:
             # 10am
-            lower_g = np.array([39, 87, 53])
-            upper_g = np.array([48, 255, 76])
+            lower_g = np.array([42, 170, 51])
+            upper_g = np.array([45, 223, 72])
+        elif ampm== 14:
+            # 14 pm
+            lower_g = np.array([37, 180, 43])
+            upper_g = np.array([43, 202, 56])
         elif ampm==25:
             lower_g = np.array([39, 62, 0])
             upper_g = np.array([70, 255, 255])
@@ -73,13 +77,22 @@ def findRect(img,color):
             mask=cv2.bitwise_or(mask1,mask2)
         elif ampm==10:
         # 10 am
-            lower_red = np.array([176, 66, 20])
-            upper_red = np.array([179, 255, 99])
+            lower_red = np.array([176, 215, 30])
+            upper_red = np.array([179, 255, 55])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 66, 20])
-            upper_red = np.array([4, 255, 99])
+            lower_red = np.array([0, 215, 30])
+            upper_red = np.array([2, 255, 55])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)        
+            mask=cv2.bitwise_or(mask1,mask2)
+        elif ampm==14:
+        # 14 pm
+            lower_red = np.array([176, 234, 38])
+            upper_red = np.array([179, 255, 52])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 234, 38])
+            upper_red = np.array([2, 255, 52])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)   
         elif ampm==25:
             lower_red = np.array([176, 66, 0])
             upper_red = np.array([179, 255, 255])
@@ -98,8 +111,12 @@ def findRect(img,color):
             upper_b = np.array([102, 178, 165])        
         elif ampm==10:        
             # 10am
-            lower_b = np.array([93, 56, 56])
-            upper_b = np.array([104, 255, 79])        
+            lower_b = np.array([93, 160, 56])
+            upper_b = np.array([104, 231, 79])        
+        elif ampm==14:        
+            # 14 pm
+            lower_b = np.array([97, 174, 59])
+            upper_b = np.array([104, 211, 74])      
         elif ampm==25:        
             # 10am
             lower_b = np.array([93, 56, 0])
