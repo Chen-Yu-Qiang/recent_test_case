@@ -39,27 +39,30 @@ def findRect(img,color):
     def nothing(data):
         pass
 
-    ampm=10
+    ampm=25
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        if ampm=20:
+        if ampm==20:
             
             # 20 pm
             lower_g = np.array([40, 62, 100])
             upper_g = np.array([70, 255, 185])
-        elif ampm=10:
+        elif ampm==10:
             # 10am
             lower_g = np.array([39, 87, 53])
             upper_g = np.array([48, 255, 76])
+        elif ampm==25:
+            lower_g = np.array([39, 62, 0])
+            upper_g = np.array([70, 255, 255])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
 
     if color=="r":
 
-        if ampm=20:
+        if ampm==20:
             # 20pm
             lower_red = np.array([176, 174, 119])
             upper_red = np.array([179, 255, 169])
@@ -68,7 +71,7 @@ def findRect(img,color):
             upper_red = np.array([8, 255, 169])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
-        elif ampm=10:
+        elif ampm==10:
         # 10 am
             lower_red = np.array([176, 66, 20])
             upper_red = np.array([179, 255, 99])
@@ -77,18 +80,31 @@ def findRect(img,color):
             upper_red = np.array([4, 255, 99])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)        
+        elif ampm==25:
+            lower_red = np.array([176, 66, 0])
+            upper_red = np.array([179, 255, 255])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 66, 0])
+            upper_red = np.array([8, 255, 255])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)        
+
 
     if color=="b":
 
-        if ampm=20:
+        if ampm==20:
             # 20pm
             lower_b = np.array([98, 140, 142])
             upper_b = np.array([102, 178, 165])        
-        elif ampm=10:        
+        elif ampm==10:        
             # 10am
             lower_b = np.array([93, 56, 56])
-            upper_b = np.array([104, 255, 79])
-            mask=cv2.inRange(hsv, lower_b, upper_b)
+            upper_b = np.array([104, 255, 79])        
+        elif ampm==25:        
+            # 10am
+            lower_b = np.array([93, 56, 0])
+            upper_b = np.array([104, 255, 255])
+        mask=cv2.inRange(hsv, lower_b, upper_b)
 
 
     result = cv2.bitwise_and(img, img, mask=mask)
@@ -117,7 +133,7 @@ class image_converter:
     def __init__(self):
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/tello_raw",Image,self.callback)
-        self.bgimg = cv2.imread("/home/yuqiang/catkin_ws4/src/recent_test_case/src/bg.png")
+        self.bgimg = cv2.imread("bg.png")
 
     def callback(self,data):
         try:
