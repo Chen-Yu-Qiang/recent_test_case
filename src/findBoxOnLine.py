@@ -39,28 +39,56 @@ def findRect(img,color):
     def nothing(data):
         pass
 
+    ampm=10
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        lower_g = np.array([40, 62, 100])
-        upper_g = np.array([70, 255, 185])
+        if ampm=20:
+            
+            # 20 pm
+            lower_g = np.array([40, 62, 100])
+            upper_g = np.array([70, 255, 185])
+        elif ampm=10:
+            # 10am
+            lower_g = np.array([39, 87, 53])
+            upper_g = np.array([48, 255, 76])
+
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
 
     if color=="r":
-        lower_red = np.array([176, 174, 119])
-        upper_red = np.array([179, 255, 169])
-        mask1 = cv2.inRange(hsv, lower_red, upper_red)
-        lower_red = np.array([0, 174, 119])
-        upper_red = np.array([8, 255, 169])
-        mask2 = cv2.inRange(hsv, lower_red, upper_red)
-        mask=cv2.bitwise_or(mask1,mask2)
+
+        if ampm=20:
+            # 20pm
+            lower_red = np.array([176, 174, 119])
+            upper_red = np.array([179, 255, 169])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 174, 119])
+            upper_red = np.array([8, 255, 169])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)
+        elif ampm=10:
+        # 10 am
+            lower_red = np.array([176, 66, 20])
+            upper_red = np.array([179, 255, 99])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 66, 20])
+            upper_red = np.array([4, 255, 99])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)        
 
     if color=="b":
-        lower_b = np.array([98, 140, 142])
-        upper_b = np.array([102, 178, 165])
-        mask=cv2.inRange(hsv, lower_b, upper_b)
+
+        if ampm=20:
+            # 20pm
+            lower_b = np.array([98, 140, 142])
+            upper_b = np.array([102, 178, 165])        
+        elif ampm=10:        
+            # 10am
+            lower_b = np.array([93, 56, 56])
+            upper_b = np.array([104, 255, 79])
+            mask=cv2.inRange(hsv, lower_b, upper_b)
 
 
     result = cv2.bitwise_and(img, img, mask=mask)
@@ -93,7 +121,7 @@ class image_converter:
 
     def callback(self,data):
         try:
-            if not time.time()%5<0.5:
+            if not time.time()%5<5:
                 return
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
 
