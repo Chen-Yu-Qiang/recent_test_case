@@ -70,8 +70,8 @@ def findRect(img,color):
             lower_g = np.array([41, 167, 69])
             upper_g = np.array([45, 213, 75])
         elif ampm==25:
-            lower_g = np.array([70, 159, 0])
-            upper_g = np.array([80, 223, 255])
+            lower_g = np.array([70, 99, 0])
+            upper_g = np.array([80, 255, 255])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 

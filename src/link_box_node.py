@@ -59,9 +59,9 @@ def get_deltaXYZ(p1,p2):
         return delta_msg
     box_msg_p1 = p1.getXYZ(191)
     box_msg_p2 = p2.getXYZ(191)
-    delta_msg.linear.x = box_msg_p2.linear.x - box_msg_p1.linear.x
-    delta_msg.linear.y = box_msg_p2.linear.y - box_msg_p1.linear.y
-    delta_msg.linear.z = box_msg_p2.linear.z - box_msg_p1.linear.z
+    delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x
+    delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y
+    delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z
     p1.set_delta(delta_msg)
     return delta_msg
 
