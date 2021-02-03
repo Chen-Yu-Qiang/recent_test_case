@@ -57,6 +57,10 @@ def findRect(img,color):
             # 10am N
             lower_g = np.array([70, 202, 24])
             upper_g = np.array([78, 255, 39])
+        elif ampm==1000:
+            # 10am NN
+            lower_g = np.array([75, 191, 81])
+            upper_g = np.array([79, 222, 93])
         elif ampm== 14:
             # 14 pm
             lower_g = np.array([37, 180, 43])
@@ -66,8 +70,8 @@ def findRect(img,color):
             lower_g = np.array([41, 167, 69])
             upper_g = np.array([45, 213, 75])
         elif ampm==25:
-            lower_g = np.array([37, 159, 0])
-            upper_g = np.array([47, 223, 255])
+            lower_g = np.array([70, 159, 0])
+            upper_g = np.array([80, 223, 255])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
@@ -99,6 +103,15 @@ def findRect(img,color):
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
             lower_red = np.array([0, 227, 33])
             upper_red = np.array([2, 255, 45])
+            mask2 = cv2.inRange(hsv, lower_red, upper_red)
+            mask=cv2.bitwise_or(mask1,mask2)
+        elif ampm==1000:
+        # 10 am NN
+            lower_red = np.array([176, 231, 104])
+            upper_red = np.array([179, 255, 115])
+            mask1 = cv2.inRange(hsv, lower_red, upper_red)
+            lower_red = np.array([0, 231, 104])
+            upper_red = np.array([0, 255, 115])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
         elif ampm==14:
@@ -134,26 +147,30 @@ def findRect(img,color):
         if ampm==20:
             # 20pm
             lower_b = np.array([98, 140, 142])
-            upper_b = np.array([102, 178, 165])        
+            upper_b = np.array([102, 178, 165])
         elif ampm==10:        
             # 10am
             lower_b = np.array([93, 160, 56])
-            upper_b = np.array([104, 231, 79])        
+            upper_b = np.array([104, 231, 79])
         elif ampm==100:        
             # 10am N
             lower_b = np.array([110, 182, 30])
             upper_b = np.array([116, 239, 40])
+        elif ampm==1000:        
+            # 10am NN
+            lower_b = np.array([109, 171, 88])
+            upper_b = np.array([113, 193, 105])
         elif ampm==14:        
             # 14 pm
             lower_b = np.array([97, 174, 59])
-            upper_b = np.array([104, 211, 74])        
+            upper_b = np.array([104, 211, 74])
         elif ampm==17:        
             # 17 pm
             lower_b = np.array([97, 166, 75])
             upper_b = np.array([101, 192, 89])      
         elif ampm==25:
-            lower_b = np.array([93, 100, 0])
-            upper_b = np.array([104, 255, 255])
+            lower_b = np.array([100, 100, 0])
+            upper_b = np.array([120, 255, 255])
         mask=cv2.inRange(hsv, lower_b, upper_b)
 
 
