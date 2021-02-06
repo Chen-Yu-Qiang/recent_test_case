@@ -42,7 +42,7 @@ class box_data:
         box_pub_msg.linear.z = z_now+0.9
 
         return box_pub_msg
-    def getXYZDelta(self,pixAT1m=191):
+    def getXYZDelta(self,pixAT1m=200):
         xyz = self.getXYZ(pixAT1m)
         xyzD=Twist()
         xyzD.linear.x = xyz.linear.x + self.delta.linear.x
@@ -69,11 +69,11 @@ def get_deltaXYZ(p1,p2):
         delta_msg.linear.y = 0
         delta_msg.linear.z = 0
         return delta_msg
-    box_msg_p1 = p1.getXYZ(191)
-    box_msg_p2 = p2.getXYZ(191)
-    delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x
-    delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y
-    delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z
+    box_msg_p1 = p1.getXYZ(200)
+    box_msg_p2 = p2.getXYZ(200)
+    delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x+p1.delta.linear.x
+    delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y+p1.delta.linear.y
+    delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z+p1.delta.linear.z
     p1.set_delta(delta_msg)
     return delta_msg
 
@@ -113,30 +113,30 @@ rate = rospy.Rate(30)
 
 while  not rospy.is_shutdown():
     if not box_data_r.isTimeOut():
-        box_pub_r_msg=box_data_r.getXYZ(191)
+        box_pub_r_msg=box_data_r.getXYZ(200)
         box_pub_r.publish(box_pub_r_msg)
     if not box_data_g.isTimeOut():
-        box_pub_g_msg=box_data_g.getXYZ(191)
+        box_pub_g_msg=box_data_g.getXYZ(200)
         box_pub_g.publish(box_pub_g_msg)
     if not box_data_b.isTimeOut():
-        box_pub_b_msg=box_data_b.getXYZ(191)
+        box_pub_b_msg=box_data_b.getXYZ(200)
         box_pub_b.publish(box_pub_b_msg)
 
 
     if not box_data_r.isTimeOut():
-        box_pub_r_msg=box_data_r.getXYZ(191)
+        box_pub_r_msg=box_data_r.getXYZ(200)
         box_pub_m.publish(box_data_r.getXYZDelta())
         if not box_data_g.isTimeOut():
             box_pub_r2g.publish(get_deltaXYZ(box_data_r,box_data_g))
             if not box_data_b.isTimeOut():
                 box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_g.isTimeOut():
-        box_pub_g_msg=box_data_g.getXYZ(191)
+        box_pub_g_msg=box_data_g.getXYZ(200)
         box_pub_m.publish(box_data_g.getXYZDelta())
         if not box_data_b.isTimeOut():
             box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_b.isTimeOut():
-        box_pub_b_msg=box_data_b.getXYZ(191)
+        box_pub_b_msg=box_data_b.getXYZ(200)
         box_pub_m.publish(box_data_b.getXYZDelta())
 
     

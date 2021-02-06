@@ -39,138 +39,49 @@ def findRect(img,color):
     def nothing(data):
         pass
 
-    ampm=25
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        if ampm==20:
-            
-            # 20 pm
-            lower_g = np.array([40, 159, 139])
-            upper_g = np.array([47, 223, 162])
-        elif ampm==10:
-            # 10am
-            lower_g = np.array([42, 170, 51])
-            upper_g = np.array([45, 223, 72])
-        elif ampm==100:
-            # 10am N
-            lower_g = np.array([70, 202, 24])
-            upper_g = np.array([78, 255, 39])
-        elif ampm==1000:
-            # 10am NN
-            lower_g = np.array([75, 191, 81])
-            upper_g = np.array([79, 222, 93])
-        elif ampm== 14:
-            # 14 pm
-            lower_g = np.array([37, 180, 43])
-            upper_g = np.array([43, 202, 56])
-        elif ampm== 17:
-            # 17 pm
-            lower_g = np.array([41, 167, 69])
-            upper_g = np.array([45, 213, 75])
-        elif ampm==25:
-            lower_g = np.array([70, 99, 0])
-            upper_g = np.array([80, 255, 255])
+        if time.localtime().tm_hour<=18 :
+            lower_g = np.array([67, 193, 30])
+            upper_g = np.array([78, 253, 64])
+        else:
+            lower_g = np.array([67, 102, 109])
+            upper_g = np.array([78, 229, 151])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
 
     if color=="r":
 
-        if ampm==20:
-            # 20pm
-            lower_red = np.array([176, 174, 119])
-            upper_red = np.array([179, 255, 169])
+        if time.localtime().tm_hour<=18 :
+            lower_red = np.array([174, 165, 35])
+            upper_red = np.array([179, 255, 81])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 174, 119])
-            upper_red = np.array([8, 255, 169])
+            lower_red = np.array([0, 165, 35])
+            upper_red = np.array([4, 255, 81])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
-        elif ampm==10:
-        # 10 am
-            lower_red = np.array([176, 215, 30])
-            upper_red = np.array([179, 255, 55])
+        else:
+            lower_red = np.array([171, 165, 135])
+            upper_red = np.array([179, 255, 181])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 215, 30])
-            upper_red = np.array([2, 255, 55])
+            lower_red = np.array([0, 165, 135])
+            upper_red = np.array([10, 255, 181])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
-        elif ampm==100:
-        # 10 am N
-            lower_red = np.array([176, 227, 33])
-            upper_red = np.array([179, 255, 45])
-            mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 227, 33])
-            upper_red = np.array([2, 255, 45])
-            mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)
-        elif ampm==1000:
-        # 10 am NN
-            lower_red = np.array([176, 231, 104])
-            upper_red = np.array([179, 255, 115])
-            mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 231, 104])
-            upper_red = np.array([0, 255, 115])
-            mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)
-        elif ampm==14:
-        # 14 pm
-            lower_red = np.array([176, 234, 38])
-            upper_red = np.array([179, 255, 52])
-            mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 234, 38])
-            upper_red = np.array([2, 255, 52])
-            mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)   
-        elif ampm==17:
-        # 17 pm
-            lower_red = np.array([178, 241, 51])
-            upper_red = np.array([179, 255, 60])
-            mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 241, 51])
-            upper_red = np.array([1, 255, 60])
-            mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)   
-        elif ampm==25:
-            lower_red = np.array([176, 174, 30])
-            upper_red = np.array([179, 255, 169])
-            mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 174, 30])
-            upper_red = np.array([8, 255, 169])
-            mask2 = cv2.inRange(hsv, lower_red, upper_red)
-            mask=cv2.bitwise_or(mask1,mask2)        
-
+      
 
     if color=="b":
 
-        if ampm==20:
-            # 20pm
-            lower_b = np.array([98, 140, 142])
-            upper_b = np.array([102, 178, 165])
-        elif ampm==10:        
-            # 10am
-            lower_b = np.array([93, 160, 56])
-            upper_b = np.array([104, 231, 79])
-        elif ampm==100:        
-            # 10am N
-            lower_b = np.array([110, 182, 30])
-            upper_b = np.array([116, 239, 40])
-        elif ampm==1000:        
-            # 10am NN
-            lower_b = np.array([109, 171, 88])
-            upper_b = np.array([113, 193, 105])
-        elif ampm==14:        
-            # 14 pm
-            lower_b = np.array([97, 174, 59])
-            upper_b = np.array([104, 211, 74])
-        elif ampm==17:        
-            # 17 pm
-            lower_b = np.array([97, 166, 75])
-            upper_b = np.array([101, 192, 89])      
-        elif ampm==25:
-            lower_b = np.array([100, 100, 0])
-            upper_b = np.array([120, 255, 255])
+        if time.localtime().tm_hour<=18 :
+            lower_b = np.array([106, 165, 28])
+            upper_b = np.array([117, 250, 69])
+        else:
+            lower_b = np.array([108, 126, 124])
+            upper_b = np.array([116, 175, 161])
+
         mask=cv2.inRange(hsv, lower_b, upper_b)
 
 
