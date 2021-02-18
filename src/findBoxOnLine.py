@@ -43,41 +43,41 @@ def findRect(img,color):
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
     if color=="g":
-        if time.localtime().tm_hour<=18 :
+        if time.localtime().tm_hour<=18 and time.localtime().tm_hour>=6 :
             lower_g = np.array([67, 193, 30])
-            upper_g = np.array([78, 253, 64])
+            upper_g = np.array([78, 253, 75])
         else:
             lower_g = np.array([67, 102, 109])
-            upper_g = np.array([78, 229, 151])
+            upper_g = np.array([78, 229, 251])
 
         mask=cv2.inRange(hsv, lower_g, upper_g)
 
 
     if color=="r":
 
-        if time.localtime().tm_hour<=18 :
+        if time.localtime().tm_hour<=18 and time.localtime().tm_hour>=6 :
             lower_red = np.array([174, 165, 35])
-            upper_red = np.array([179, 255, 81])
+            upper_red = np.array([179, 255, 93])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
             lower_red = np.array([0, 165, 35])
-            upper_red = np.array([4, 255, 81])
+            upper_red = np.array([4, 255, 93])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
         else:
-            lower_red = np.array([171, 165, 135])
-            upper_red = np.array([179, 255, 181])
+            lower_red = np.array([171, 165, 111])
+            upper_red = np.array([179, 255, 211])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 165, 135])
-            upper_red = np.array([10, 255, 181])
+            lower_red = np.array([0, 165, 111])
+            upper_red = np.array([10, 255, 211])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
             mask=cv2.bitwise_or(mask1,mask2)
       
 
     if color=="b":
 
-        if time.localtime().tm_hour<=18 :
+        if time.localtime().tm_hour<=18 and time.localtime().tm_hour>=6 :
             lower_b = np.array([106, 165, 28])
-            upper_b = np.array([117, 250, 69])
+            upper_b = np.array([117, 250, 83])
         else:
             lower_b = np.array([108, 126, 124])
             upper_b = np.array([116, 175, 161])

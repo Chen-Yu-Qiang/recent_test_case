@@ -74,7 +74,7 @@ def get_deltaXYZ(p1,p2):
     delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x+p1.delta.linear.x
     delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y+p1.delta.linear.y
     delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z+p1.delta.linear.z
-    p1.set_delta(delta_msg)
+    p2.set_delta(delta_msg)
     return delta_msg
 
 
@@ -107,7 +107,7 @@ box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
 box_pub_m = rospy.Publisher('from_box_merge', Twist, queue_size=1)
 box_pub_r2g = rospy.Publisher('from_box_r2g', Twist, queue_size=1)
-box_pub_g2b = rospy.Publisher('from_box_g2b', Twist, queue_size=1)
+box_pub_r2b = rospy.Publisher('from_box_r2b', Twist, queue_size=1)
 rate = rospy.Rate(30)
 
 
@@ -124,19 +124,16 @@ while  not rospy.is_shutdown():
 
 
     if not box_data_r.isTimeOut():
-        box_pub_r_msg=box_data_r.getXYZ(200)
         box_pub_m.publish(box_data_r.getXYZDelta())
         if not box_data_g.isTimeOut():
             box_pub_r2g.publish(get_deltaXYZ(box_data_r,box_data_g))
             if not box_data_b.isTimeOut():
-                box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
+                box_pub_r2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_g.isTimeOut():
-        box_pub_g_msg=box_data_g.getXYZ(200)
         box_pub_m.publish(box_data_g.getXYZDelta())
         if not box_data_b.isTimeOut():
-            box_pub_g2b.publish(get_deltaXYZ(box_data_g,box_data_b))
+            box_pub_r2b.publish(get_deltaXYZ(box_data_g,box_data_b))
     elif not box_data_b.isTimeOut():
-        box_pub_b_msg=box_data_b.getXYZ(200)
         box_pub_m.publish(box_data_b.getXYZDelta())
 
     
