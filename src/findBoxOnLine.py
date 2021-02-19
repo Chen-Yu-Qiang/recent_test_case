@@ -38,7 +38,7 @@ def cb_power(data):
 def findRect(img,color):
     def nothing(data):
         pass
-
+    ttt=time.time()
     # convert to HSV
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # print(hsv[360][480])
@@ -84,7 +84,7 @@ def findRect(img,color):
 
         mask=cv2.inRange(hsv, lower_b, upper_b)
 
-
+    ttt=time.time()
     result = cv2.bitwise_and(img, img, mask=mask)
 
     kernel = np.ones((27,27), np.uint8)
@@ -93,16 +93,17 @@ def findRect(img,color):
     gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
     ret,binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
 
-
+    ttt=time.time()
     _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     A_max=0
     c_max=None
+    []
     for c in contours:
         __, _, w1, h1 = cv2.boundingRect(c)
         if cv2.contourArea(c)>A_max and w1>50 and h1>70 and (1.0*h1/w1)<(3.0/2)*1.2 and (1.0*h1/w1)>(3.0/2)*0:
             A_max=cv2.contourArea(c)
             c_max=c
-    
+    ttt=time.time()
     x, y, w, h = cv2.boundingRect(c_max)
     # print(x,y,w,h)
    
@@ -113,14 +114,17 @@ class image_converter:
         self.bridge = CvBridge()
         self.image_sub = rospy.Subscriber("/tello_raw",Image,self.callback)
         self.bgimg = cv2.imread("bg.png")
+        self.isdoing=0
 
     def callback(self,data):
         try:
-            if not time.time()%5<5:
-                return
+            
+            self.isdoing=1
+            ttt=time.time()
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
-
             x, y, w, h = findRect(cv_image,"r")
+            #print("           ",time.time()-ttt)
+            ttt=time.time()
             # print(x,y,w,h)
             p=Point()
             p.x=x+w/2
@@ -128,7 +132,8 @@ class image_converter:
             p.z=w
             pub_r.publish(p)
             addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (0,0,255), 5) 
-
+            
+            
             x, y, w, h = findRect(cv_image,"g")
             # print(x,y,w,h)
             p=Point()
@@ -136,7 +141,7 @@ class image_converter:
             p.y=y+h/2
             p.z=w
             pub_g.publish(p)
-            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (0,255,0), 5) 
+            addbox=cv2.rectangle(addbox, (x,y), (x+w,y+h), (0,255,0), 5) 
 
             x, y, w, h = findRect(cv_image,"b")
             # print(x,y,w,h)
@@ -145,9 +150,8 @@ class image_converter:
             p.y=y+h/2
             p.z=w
             pub_b.publish(p)
-            addbox=cv2.rectangle(cv_image, (x,y), (x+w,y+h), (255,0,0), 5) 
+            addbox=cv2.rectangle(addbox, (x,y), (x+w,y+h), (255,0,0), 5) 
             addbox=cv2.circle(addbox, (480,360), 5, 255)
-
             imgAndState = np.hstack((addbox,self.bgimg))
             imgAndState = cv2.putText(imgAndState,str(power_last),(1130,200),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
@@ -157,6 +161,7 @@ class image_converter:
             imgAndState = cv2.putText(imgAndState,str(y_d),(1130,475),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(z_d),(1130,515),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             cv2.imshow('addbox', imgAndState)
+            self.isdoing=0
             cv2.waitKey(1)
         except CvBridgeError as e:
             print(e)

@@ -134,7 +134,7 @@ while  not rospy.is_shutdown():
         x_pid.d_term=kd
         x_pid.output=cmd_x
 
-        kp = 2
+        kp = 1
         ki = 0
         kd = 0
         cmd_y=kp*err_y+ki*err_y_int+kd*err_y_dif
@@ -148,7 +148,7 @@ while  not rospy.is_shutdown():
         y_pid.output=cmd_y
 
 
-        kp = 2
+        kp = 1
         ki = 0
         kd = 0
         cmd_z=kp*err_z+ki*err_z_int+kd*err_z_dif

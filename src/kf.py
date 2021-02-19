@@ -21,8 +21,7 @@ def cb_box(data):
     Y=Z-np.dot(H1,X)
     S=np.dot(np.dot(H1,P),np.transpose(H1))+R1
     K=np.dot(np.dot(P,np.transpose(H1)),np.linalg.inv(S))
-    if max(abs(np.dot(K,Y)))>0.5:
-        return
+    
     X=X+np.dot(K,Y)
     P=np.dot(np.eye(9)-np.dot(K,H1),P)
 
