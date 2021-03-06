@@ -138,7 +138,7 @@ def est(img):
     # dist_coeffs = np.array([0, 0, 0, 0, 0])
     
 
-    thePoint = [[[0, -0.1, 0.60],[0, 0.1, 0.60],[0, 0.1, 0.40],[0, -0.1, 0.40]],
+    thePoint = [[[0, 0.122, 1.025],[0, 0.303, 1.025],[0, 0.303, 0.844],[0, 0.122, 0.844]],
                 [[0, -0.1, -0.40],[0, 0.1, -0.40],[0, 0.1, -0.60],[0, -0.1, -0.60]],
                 [[0, -0.54, 0.1],[0, -0.34, 0.1],[0, -0.34, -0.1],[0, -0.54, -0.1]],
                 [[0, 0.34, 0.1],[0, 0.54, 0.1],[0, 0.54, -0.1],[0, 0.34, -0.1]]]
@@ -154,7 +154,7 @@ def est(img):
         retval, rvec, tvec = aruco.estimatePoseBoard(
             corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec)
     else:
-        /retval, rvec, tvec = aruco.estimatePoseBoard(
+        retval, rvec, tvec = aruco.estimatePoseBoard(
                 corners, ids, board, camera_matrix, dist_coeffs, rvec, tvec,True)
     if retval==0:
         return 0, 0, 0

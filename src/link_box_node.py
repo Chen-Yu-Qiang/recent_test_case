@@ -125,7 +125,7 @@ while  not rospy.is_shutdown():
 
     if not box_data_r.isTimeOut():
         box_pub_m.publish(box_data_r.getXYZDelta())
-        if not box_data_g.isTimeOut():
+        if (not box_data_g.isTimeOut()) and box_data_r.getXYZ(200).linear.x>1.9:
             r2g_msg=get_deltaXYZ(box_data_r,box_data_g)
             if r2g_msg.linear.x==0 and r2g_msg.linear.y==0 and r2g_msg.linear.z==0:
                 pass
@@ -139,7 +139,7 @@ while  not rospy.is_shutdown():
                     box_pub_r2b.publish(r2b_msg)
     elif not box_data_g.isTimeOut():
         box_pub_m.publish(box_data_g.getXYZDelta())
-        if not box_data_b.isTimeOut():
+        if (not box_data_b.isTimeOut()) and box_data_b.getXYZ(200).linear.x>1.9:
             r2b_msg=get_deltaXYZ(box_data_g,box_data_b)
             if r2b_msg.linear.x==0 and r2b_msg.linear.y==0 and r2b_msg.linear.z==0:
                 pass

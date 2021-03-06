@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 from nav_msgs.msg import Odometry
 from geometry_msgs.msg import PoseStamped
+from geometry_msgs.msg import Twist
 import time
 import rospy
 import tf
 rospy.init_node('int_imu', anonymous=True)
-px = 0
+px = 1.5
 py = 0
 pz = 0
 
 
 imu_pub = rospy.Publisher("from_IMU", PoseStamped, queue_size=1)
+imu_pub2 = rospy.Publisher("from_IMU2", Twist, queue_size=1)
 last_time=None
 def callback(data):
     global px, py, pz, last_time, imu_pub
@@ -37,7 +39,11 @@ def callback(data):
     pubmsg.pose.orientation.z = q3
     pubmsg.header = data.header
     imu_pub.publish(pubmsg)
-
+    pubmsg=Twist()
+    pubmsg.linear.x=px
+    pubmsg.linear.y=py
+    pubmsg.linear.z=pz
+    imu_pub2.publish(pubmsg)
 
 imu_sub = rospy.Subscriber("tello/odom", Odometry, callback)
 
