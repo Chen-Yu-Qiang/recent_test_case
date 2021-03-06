@@ -17,6 +17,7 @@ class box_data:
         self.delta.linear.x=0
         self.delta.linear.y=0
         self.delta.linear.z=0
+        self.pixAT1m_=200
 
     
     def setFromMsg(self,data):
@@ -31,6 +32,7 @@ class box_data:
 
     def getXYZ(self,pixAT1m):
         self.lock.acquire()
+        pixAT1m=self.pixAT1m_
         distance = pixAT1m / (self.w+0.001)
         x_now = min(distance,10)
         y_now = (((self.x-480) * distance) / 952)*(-1)
@@ -43,6 +45,7 @@ class box_data:
 
         return box_pub_msg
     def getXYZDelta(self,pixAT1m=200):
+        pixAT1m=self.pixAT1m_
         xyz = self.getXYZ(pixAT1m)
         xyzD=Twist()
         xyzD.linear.x = xyz.linear.x + self.delta.linear.x
@@ -82,6 +85,9 @@ def get_deltaXYZ(p1,p2):
 box_data_r=box_data()
 box_data_g=box_data()
 box_data_b=box_data()
+box_data_r.pixAT1m_=193
+box_data_g.pixAT1m_=172
+
 
 
 def cb_box_r(data):
@@ -113,10 +119,10 @@ rate = rospy.Rate(30)
 
 while  not rospy.is_shutdown():
     if not box_data_r.isTimeOut():
-        box_pub_r_msg=box_data_r.getXYZ(200)
+        box_pub_r_msg=box_data_r.getXYZ(193)
         box_pub_r.publish(box_pub_r_msg)
     if not box_data_g.isTimeOut():
-        box_pub_g_msg=box_data_g.getXYZ(200)
+        box_pub_g_msg=box_data_g.getXYZ(172)
         box_pub_g.publish(box_pub_g_msg)
     if not box_data_b.isTimeOut():
         box_pub_b_msg=box_data_b.getXYZ(200)
