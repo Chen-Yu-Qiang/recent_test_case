@@ -44,6 +44,39 @@ class box_data:
         box_pub_msg.linear.z = z_now+0.9
 
         return box_pub_msg
+
+    def det2XYZ(self,p2):
+        distance=0
+        p2.lock.acquire()
+        pixAT1m=p2.pixAT1m_
+        distance = pixAT1m / (p2.w+0.001)
+        p2.lock.release()        
+
+        self.lock.acquire()
+        pixAT1m=self.pixAT1m_
+        distance = (distance+pixAT1m / (self.w+0.001))*0.5
+        x_now = min(distance,10)
+        y_now = (((self.x-480) * distance) / 952)*(-1)
+        z_now = ((self.y-360) * distance) / 952
+        self.lock.release()
+        box_pub_msg = Twist()
+        box_pub_msg.linear.x = x_now
+        box_pub_msg.linear.y = y_now
+        box_pub_msg.linear.z = z_now+0.9
+
+        p2.lock.acquire()
+        pixAT1m=p2.pixAT1m_
+        x_now = min(distance,10)
+        y_now = (((p2.x-480) * distance) / 952)*(-1)
+        z_now = ((p2.y-360) * distance) / 952
+        p2.lock.release()
+
+        box_pub_msg_p2 = Twist()
+        box_pub_msg_p2.linear.x = x_now
+        box_pub_msg_p2.linear.y = y_now
+        box_pub_msg_p2.linear.z = z_now+0.9
+        return box_pub_msg,box_pub_msg_p2
+
     def getXYZDelta(self):
         pixAT1m=self.pixAT1m_
         xyz = self.getXYZ()
@@ -72,8 +105,7 @@ def get_deltaXYZ(p1,p2):
         delta_msg.linear.y = 0
         delta_msg.linear.z = 0
         return delta_msg
-    box_msg_p1 = p1.getXYZ()
-    box_msg_p2 = p2.getXYZ()
+    (box_msg_p1,box_msg_p2) = p1.get2XYZ(p2)
     delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x+p1.delta.linear.x
     delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y+p1.delta.linear.y
     delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z+p1.delta.linear.z
