@@ -17,7 +17,7 @@ class box_data:
         self.delta.linear.x=0
         self.delta.linear.y=0
         self.delta.linear.z=0
-        self.pixAT1m_=200
+        self.pixAT1m_=0
 
     
     def setFromMsg(self,data):
@@ -30,7 +30,7 @@ class box_data:
         self.newtime = time.time()
         self.lock.release()
 
-    def getXYZ(self,pixAT1m):
+    def getXYZ(self):
         self.lock.acquire()
         pixAT1m=self.pixAT1m_
         distance = pixAT1m / (self.w+0.001)
@@ -44,9 +44,9 @@ class box_data:
         box_pub_msg.linear.z = z_now+0.9
 
         return box_pub_msg
-    def getXYZDelta(self,pixAT1m=200):
+    def getXYZDelta(self):
         pixAT1m=self.pixAT1m_
-        xyz = self.getXYZ(pixAT1m)
+        xyz = self.getXYZ()
         xyzD=Twist()
         xyzD.linear.x = xyz.linear.x + self.delta.linear.x
         xyzD.linear.y = xyz.linear.y + self.delta.linear.y
@@ -72,8 +72,8 @@ def get_deltaXYZ(p1,p2):
         delta_msg.linear.y = 0
         delta_msg.linear.z = 0
         return delta_msg
-    box_msg_p1 = p1.getXYZ(200)
-    box_msg_p2 = p2.getXYZ(200)
+    box_msg_p1 = p1.getXYZ()
+    box_msg_p2 = p2.getXYZ()
     delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x+p1.delta.linear.x
     delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y+p1.delta.linear.y
     delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z+p1.delta.linear.z
@@ -85,8 +85,10 @@ def get_deltaXYZ(p1,p2):
 box_data_r=box_data()
 box_data_g=box_data()
 box_data_b=box_data()
-box_data_r.pixAT1m_=193
-box_data_g.pixAT1m_=172
+box_data_r.pixAT1m_=190
+box_data_g.pixAT1m_=175
+box_data_b.pixAT1m_=186
+
 
 
 
@@ -119,19 +121,19 @@ rate = rospy.Rate(30)
 
 while  not rospy.is_shutdown():
     if not box_data_r.isTimeOut():
-        box_pub_r_msg=box_data_r.getXYZ(193)
+        box_pub_r_msg=box_data_r.getXYZ()
         box_pub_r.publish(box_pub_r_msg)
     if not box_data_g.isTimeOut():
-        box_pub_g_msg=box_data_g.getXYZ(172)
+        box_pub_g_msg=box_data_g.getXYZ()
         box_pub_g.publish(box_pub_g_msg)
     if not box_data_b.isTimeOut():
-        box_pub_b_msg=box_data_b.getXYZ(200)
+        box_pub_b_msg=box_data_b.getXYZ()
         box_pub_b.publish(box_pub_b_msg)
 
 
     if not box_data_r.isTimeOut():
         box_pub_m.publish(box_data_r.getXYZDelta())
-        if (not box_data_g.isTimeOut()) and box_data_r.getXYZ(200).linear.x>1.9:
+        if (not box_data_g.isTimeOut()) and box_data_r.getXYZ().linear.x>0.9:
             r2g_msg=get_deltaXYZ(box_data_r,box_data_g)
             if r2g_msg.linear.x==0 and r2g_msg.linear.y==0 and r2g_msg.linear.z==0:
                 pass
@@ -145,7 +147,7 @@ while  not rospy.is_shutdown():
                     box_pub_r2b.publish(r2b_msg)
     elif not box_data_g.isTimeOut():
         box_pub_m.publish(box_data_g.getXYZDelta())
-        if (not box_data_b.isTimeOut()) and box_data_b.getXYZ(200).linear.x>1.9:
+        if (not box_data_b.isTimeOut()) and box_data_b.getXYZ().linear.x>0.9:
             r2b_msg=get_deltaXYZ(box_data_g,box_data_b)
             if r2b_msg.linear.x==0 and r2b_msg.linear.y==0 and r2b_msg.linear.z==0:
                 pass

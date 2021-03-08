@@ -76,8 +76,8 @@ def findRect(img,color):
     if color=="b":
 
         if time.localtime().tm_hour<=18 and time.localtime().tm_hour>=6 :
-            lower_b = np.array([106, 165, 28])
-            upper_b = np.array([117, 250, 83])
+            lower_b = np.array([106, 165, 10])
+            upper_b = np.array([117, 250, 120])
         else:
             lower_b = np.array([108, 126, 124])
             upper_b = np.array([116, 175, 161])
