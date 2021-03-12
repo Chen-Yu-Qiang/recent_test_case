@@ -45,7 +45,7 @@ class box_data:
 
         return box_pub_msg
 
-    def det2XYZ(self,p2):
+    def get2XYZ(self,p2):
         distance=0
         p2.lock.acquire()
         pixAT1m=p2.pixAT1m_
@@ -56,6 +56,7 @@ class box_data:
         pixAT1m=self.pixAT1m_
         distance = (distance+pixAT1m / (self.w+0.001))*0.5
         x_now = min(distance,10)
+        print(x_now)
         y_now = (((self.x-480) * distance) / 952)*(-1)
         z_now = ((self.y-360) * distance) / 952
         self.lock.release()
@@ -67,6 +68,8 @@ class box_data:
         p2.lock.acquire()
         pixAT1m=p2.pixAT1m_
         x_now = min(distance,10)
+        print(x_now)
+        print("-----")
         y_now = (((p2.x-480) * distance) / 952)*(-1)
         z_now = ((p2.y-360) * distance) / 952
         p2.lock.release()
@@ -88,6 +91,7 @@ class box_data:
 
     def set_delta(self,delta):
         self.delta = delta
+        print(delta)
 
 
     def isTimeOut(self):
@@ -106,6 +110,8 @@ def get_deltaXYZ(p1,p2):
         delta_msg.linear.z = 0
         return delta_msg
     (box_msg_p1,box_msg_p2) = p1.get2XYZ(p2)
+    #box_msg_p1 = p1.getXYZ()
+    #box_msg_p2 = p2.getXYZ()
     delta_msg.linear.x = box_msg_p1.linear.x - box_msg_p2.linear.x+p1.delta.linear.x
     delta_msg.linear.y = box_msg_p1.linear.y - box_msg_p2.linear.y+p1.delta.linear.y
     delta_msg.linear.z = box_msg_p1.linear.z - box_msg_p2.linear.z+p1.delta.linear.z
@@ -172,7 +178,7 @@ while  not rospy.is_shutdown():
             else:
                 box_pub_r2g.publish(r2g_msg)
             if not box_data_b.isTimeOut():
-                r2b_msg=get_deltaXYZ(box_data_g,box_data_b)
+                r2b_msg=get_deltaXYZ(box_data_r,box_data_b)
                 if r2b_msg.linear.x==0 and r2b_msg.linear.y==0 and r2b_msg.linear.z==0:
                     pass
                 else:
