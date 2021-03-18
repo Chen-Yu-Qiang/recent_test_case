@@ -86,44 +86,60 @@ def findRect(img,color):
             upper_b = np.array([116, 210, 180])
         mask=cv2.inRange(hsv, lower_b, upper_b)
     
-    # cv2.imshow('mask'+str(color), mask)
-    # cv2.waitKey(0)
+    cv2.imshow('mask'+str(color), mask)
+    cv2.waitKey(1)
     mask = cv2.dilate(mask, np.ones((17,17), np.uint8), iterations = 1)
     result = cv2.bitwise_and(img, img, mask=mask)
 
+    # new
     kernel = np.ones((17,17), np.uint8)
     erosion = cv2.dilate(result, kernel, iterations = 1)
+
+    # # old
+    # kernel = np.ones((27,27), np.uint8)
+    # erosion = cv2.erode(result, kernel, iterations = 1)
+
+
     gray = cv2.cvtColor(erosion, cv2.COLOR_BGR2GRAY)
     ret,binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
-    cv2.imshow('erosion'+str(color), erosion)
-    cv2.waitKey(1)
+    # cv2.imshow('erosion'+str(color), erosion)
+    # cv2.waitKey(0)
 
     _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
+    
+    # img2=cv2.drawContours(img,contours,-1,(0,255,0),5)
+    # cv2.imshow('erosion2'+str(color), img2)
+    # cv2.waitKey(1)
+    # print(len(contours),color)
     A_max=0
     c_max=None
     []
-    for c in contours:
+    for c in contours: 
         __, _, w1, h1 = cv2.boundingRect(c)
-        #print(cv2.boundingRect(c))
+        # print(cv2.boundingRect(c))
         if cv2.contourArea(c)>A_max and w1>50 and h1>70 :
             A_max=cv2.contourArea(c)
             c_max=c
 
     x, y, w, h = cv2.boundingRect(c_max)
-    # print(x,y,w,h)
+    # addbox=cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 1) 
+    # cv2.imshow("ad",addbox)
+    # cv2.waitKey(0)
+    # print(x,y,w,h,color)
    
     return x,y,w,h
 
 def findCanny(img,color):
     global r,g,b
-    bigger=0
+    bigger=0.01
     # cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     # cv2.waitKey(0)
+    img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
+    
     x,y,w,h = findRect(img,color)
     
-    if x*y*w*h==0:
-        # print("findRect=0",color)
+    if w*h==0:
+        print("findRect=0",color)
         return
     mask = np.zeros((720,960,1), np.uint8) 
     mask.fill(0)
@@ -133,39 +149,59 @@ def findCanny(img,color):
     image = cv2.bitwise_or(img, img, mask=mask)
 
     #image = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
-    
+    y_min=max(0,int(y-h*bigger+1))
+    y_max=min(719,int(y+h*(1+2*bigger)-1))
+    x_min=max(0,int(x-w*bigger+1))
+    x_max=min(959,int(x+w*(1+2*bigger)-1))
+    cv2.imshow('cut'+color, image[y_min:y_max,x_min:x_max])
+    cv2.waitKey(1)   
     # print(image.shape)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     # cv2.imshow('blurred', blurred)
-    y_min=max(0,int(y-h*bigger+1))
-    y_max=min(719,int(y+h*(1+2*bigger)-1))
-    x_min=max(0,int(x-w*bigger+1))
-    x_max=min(959,int(x+w*(1+2*bigger)-1))
     canny=blurred[y_min:y_max,x_min:x_max]
-
+    cv2.imshow('canny'+color, canny)
+    cv2.waitKey(1)   
     # print("G",canny.shape)
     canny = cv2.Canny(canny, 10, 100)
+    # aaa=blurred[y_min:y_max,x_min:x_max]
+    # lines = cv2.HoughLines(canny, 1, np.pi / 180, 50)
+    # print(lines)
+    # for rho,theta in lines[0]:
+    #     a = np.cos(theta)
+    #     b = np.sin(theta)
+    #     x0 = a*rho
+    #     y0 = b*rho
+    #     x1 = int(x0 + 50*(-b))
+    #     y1 = int(y0 + 50*(a))
+    #     x2 = int(x0 - 50*(-b)) 
+    #     y2 = int(y0 - 50*(a))
 
+    #     aaa=cv2.line(aaa,(x1,y1),(x2,y2),(0,255,255),2)
+
+    # cv2.imshow('aaa'+color, aaa)
+    # cv2.waitKey(0)
     if canny is None:
         # print("canny is none",color)
         return
-    #canny = cv2.GaussianBlur(canny, (5, 5), 0)
+    canny = cv2.GaussianBlur(canny, (3, 3), 0)
     cv2.imshow('canny'+color, canny)
     cv2.waitKey(1)
+
+
     # print("F")
     _,contours, _ = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for ii in range(len(contours)):
         for i in range(len(contours[ii])):
             contours[ii][i]=[[contours[ii][i][0][0]+x_min,contours[ii][i][0][1]+y_min]] 
 
-    cv2.drawContours(image,contours,-1,(0,0,255),-1) 
-    cv2.imshow('image'+color, image)
-    cv2.waitKey(1)
+    # cv2.drawContours(image,contours,-1,(0,0,255),2) 
+    # cv2.imshow('image'+color, image)
+    # cv2.waitKey(1)
     A_max=0
     c_max=None
-    print(len(contours))
+    # print(len(contours))
     for c in contours:
         __, _, w1, h1 = cv2.boundingRect(c) 
         #print(cv2.boundingRect(c))
@@ -173,18 +209,25 @@ def findCanny(img,color):
             A_max=cv2.contourArea(c)
             c_max=c
     if A_max==0:
-        # print("no max area",color)
+        print("no max area",color)
         return
     #print(c_max)
+    # cv2.drawContours(image,c_max,-1,(0,0,255),2) 
+    # cv2.imshow('mavimage'+color, image)
+    # cv2.waitKey(1)
     peri = cv2.arcLength(c_max, True) 
     approx1 = cv2.approxPolyDP(c_max, 0.1*peri, True)
     # print(len(approx1),len(approx1[0]))
-    # cv2.polylines(image, [approx1], True, (255, 0, 0), 1)
+    cv2.polylines(image, [approx1], True, (255, 0, 0), 1)
     # cv2.imshow('imageHSV', image)
     # print(approx1)
     if  not len(approx1)==4:
         print("len(approx1)=",len(approx1),color)
-        return
+        print(approx1)
+        if len(approx1)<4:
+            return
+        else:
+            approx1=approx1[0:4]
     # print("=== "+str(color)+" good===")
     H_max,S_max,V_max,H_std,S_std,V_std = gethsv(img,approx1)
     # print(color,H_max,S_max,V_max,H_std,S_std,V_std)
@@ -229,9 +272,13 @@ def xywh(p):
     y=(x1*y2*y3 - x2*y1*y3 - x1*y2*y4 + x2*y1*y4 - x3*y1*y4 + x4*y1*y3 + x3*y2*y4 - x4*y2*y3)/(x1*y3 - x3*y1 - x1*y4 - x2*y3 + x3*y2 + x4*y1 + x2*y4 - x4*y2)
     # (x1,y1)  (x3,y3)
     # (x4,y4)  (x2,y2)
-    w=0.5*(x3+x2-x1-x4)
-    h=0.5*(y4+y2-y1-y3)
-    return int(x),int(y),int(w),int(h)
+    w=0.5*(1.0*x3+x2-x1-x4)
+    h=0.5*(1.0*y3+y1-y2-y4)
+    a=-0.5*(x2*y3+x3*y1+x1*y4+x4*y2-x3*y2-x1*y3-x4*y1-x2*y4)
+    # print(p,w,h,a)
+    # print(1.0*x-(x1+x2+x3+x4)*0.25)
+    # print(1.0*y-(y1+y2+y3+y4)*0.25)
+    return x,y,w,h,a
 
 def mySTD(a,m,l):
     b=0
@@ -286,7 +333,7 @@ def nowHSV(color,H_max,S_max,V_max,H_std,S_std,V_std):
     global HSVrang
     # print(HSVrang)
     manyTime=3
-    NowRate=0.01
+    NowRate=0.001
     if color=="r":
         S_g_low = S_max-manyTime*S_std
         S_g_High = S_max+manyTime*S_std
@@ -372,14 +419,18 @@ def findRGB(img):
     findCanny(img,"b")
     if not r is None:
         print("r",xywh(div1234(r)))
+        img=cv2.circle(img, xywh(div1234(r))[0:2], 2, 255)
     if not g is None:
         print("g",xywh(div1234(g)))
+        img=cv2.circle(img, xywh(div1234(g))[0:2], 2, 255)
     if not b is None:
         print("b",xywh(div1234(b)))
+        img=cv2.circle(img, xywh(div1234(b))[0:2], 2, 255)
     cv2.polylines(img, [r,g,b], True, (255, 0, 0), 1)
     # print(time.time()-t)
-    cv2.imshow("a",img)
-    cv2.waitKey(0)
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
+    cv2.imshow("a",hsv)
+    cv2.waitKey(1)
     # print("r,g,b",r,g,b)
     # print(HSVrang)
     return r,g,b
@@ -397,29 +448,34 @@ if __name__ == '__main__':
     # print(HSVrang)
 
 
-    filename="/time_RGB/1m0312 (copy).png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/1m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/15m0312.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/15m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/2m0312.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/2m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/25m0312.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/25m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/3m0312.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/3m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/35m0312.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/35m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+
+    # filename="/time_RGB/4m0315.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
     filename="/time_RGB/2m0312-12.png"
     img = cv2.imread(os.getcwd()+filename)

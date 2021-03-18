@@ -60,7 +60,7 @@ class image_converter:
 
             if not r is None:
                 # print(r)
-                x, y, w, h =findBoxWCanny.xywh(findBoxWCanny.div1234(r))
+                x, y, w, h, _ =findBoxWCanny.xywh(findBoxWCanny.div1234(r))
                 if not x*y*w*h==0:
                     p=Point()
                     p.x=x
@@ -70,7 +70,7 @@ class image_converter:
                     cv_image=cv2.rectangle(cv_image, (int(x-0.5*w),int(y-0.5*h)), (int(x+0.5*w),int(y+0.5*h)), (0,0,255), 5) 
                 
             if not g is None:
-                x, y, w, h = findBoxWCanny.xywh(findBoxWCanny.div1234(g))
+                x, y, w, h , _= findBoxWCanny.xywh(findBoxWCanny.div1234(g))
                 if not x*y*w*h==0:
                     p=Point()
                     p.x=x
@@ -79,7 +79,7 @@ class image_converter:
                     pub_g.publish(p)
                     cv_image=cv2.rectangle(cv_image, (int(x-0.5*w),int(y-0.5*h)), (int(x+0.5*w),int(y+0.5*h)), (0,255,0), 5) 
             if not b is None:
-                x, y, w, h = findBoxWCanny.xywh(findBoxWCanny.div1234(b))
+                x, y, w, h, _ = findBoxWCanny.xywh(findBoxWCanny.div1234(b))
                 if not x*y*w*h==0:
                     p=Point()
                     p.x=x
