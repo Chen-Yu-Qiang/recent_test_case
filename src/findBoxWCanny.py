@@ -21,7 +21,7 @@ HSVrang={
 
 def findRect(img,color):
     global HSVrang
-    tm_hour=10
+    tm_hour=20
 
     # convert to HSV
 
@@ -82,7 +82,7 @@ def findRect(img,color):
         else:
             lower_b = np.array([108, 126, 124])
             upper_b = np.array([116, 175, 161])
-            lower_b = np.array([103, 126, 124])
+            lower_b = np.array([103, 126, 100])
             upper_b = np.array([116, 210, 180])
         mask=cv2.inRange(hsv, lower_b, upper_b)
     
@@ -132,8 +132,8 @@ def findRect(img,color):
 def findCanny(img,color):
     global r,g,b
     bigger=0.01
-    # cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
-    # cv2.waitKey(0)
+    cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
+    cv2.waitKey(1)
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
     
     x,y,w,h = findRect(img,color)
@@ -429,12 +429,16 @@ def findRGB(img):
     cv2.polylines(img, [r,g,b], True, (255, 0, 0), 1)
     # print(time.time()-t)
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
-    cv2.imshow("a",hsv)
-    cv2.waitKey(1)
+    cv2.imshow("a",img)
+    cv2.waitKey(0)
     # print("r,g,b",r,g,b)
     # print(HSVrang)
     return r,g,b
 
+def d1d2(x,y):
+    t=np.pi/2-np.arccos((0.16+x*x-y*y)/(0.8*x))
+    d=x*np.cos(t)
+    return t/np.pi*180+90,d
 
 if __name__ == '__main__':
     # filename="/time_RGB/15m0312.png"
@@ -477,15 +481,224 @@ if __name__ == '__main__':
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)
 
-    filename="/time_RGB/2m0312-12.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/2m0312-12.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/2m0312-12-45.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/2m0312-12-45.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
-    filename="/time_RGB/2m0312-12+45.png"
-    img = cv2.imread(os.getcwd()+filename)
-    findRGB(img)
+    # filename="/time_RGB/2m0312-12+45.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
 
+
+    ###################################################
+    # filename="/time_RGB/0318/t1/1020-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t1/1507-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t1/1993-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+    
+    # filename="/time_RGB/0318/t1/2502-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t1/2996-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t1/3505-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    ###################################################
+    # filename="/time_RGB/0318/t2/1006-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t2/1503-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t2/2002-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+    
+    # filename="/time_RGB/0318/t2/2543-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t2/2999-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t2/3508-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    ###################################################
+    # filename="/time_RGB/0318/t3/0999-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t3/1509-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t3/2016-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+    
+    # filename="/time_RGB/0318/t3/2510-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t3/3058-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t3/3503-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    ###################################################
+    # filename="/time_RGB/0318/t4/1364-0318-1.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/1364-0318-2.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/1364-0318-3.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2208-0318-1.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2208-0318-2.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2208-0318-3.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2753-0318-1.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2753-0318-2.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/2753-0318-3.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/3177-0318-1.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/3177-0318-2.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t4/3177-0318-3.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    ###################################################
+    # filename="/time_RGB/0318/t5/1807-17079-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/1807-17692-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/1807-18348-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/2648-16701-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/2648-17346-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/2648-18151-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/2648-18770-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-16445-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-17029-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-17587-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-18090-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-18548-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t5/3440-19026-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    ###################################################
+    # filename="/time_RGB/0318/t6/1778-1464-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t6/1981-1827-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t6/2115-2282-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t6/2327-2637-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t6/2662-2842-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    # filename="/time_RGB/0318/t6/3003-2784-0318.png"
+    # img = cv2.imread(os.getcwd()+filename)
+    # findRGB(img)
+
+    print(d1d2(1.778,1.464))
+    print(d1d2(1.981,1.827))
+    print(d1d2(2.115,2.282))
+    print(d1d2(2.327,2.637))
+    print(d1d2(2.662,2.842))
+    print(d1d2(3.003,2.784))
