@@ -56,7 +56,7 @@ class box_data:
         pixAT1m=self.pixAT1m_
         distance = (distance+pixAT1m / (self.w+0.001))*0.5
         x_now = min(distance,10)
-        print(x_now)
+        # print(x_now)
         y_now = (((self.x-480) * distance) / 952)*(-1)
         z_now = ((self.y-360) * distance) / 952
         self.lock.release()
@@ -68,8 +68,8 @@ class box_data:
         p2.lock.acquire()
         pixAT1m=p2.pixAT1m_
         x_now = min(distance,10)
-        print(x_now)
-        print("-----")
+        # print(x_now)
+        # print("-----")
         y_now = (((p2.x-480) * distance) / 952)*(-1)
         z_now = ((p2.y-360) * distance) / 952
         p2.lock.release()
@@ -91,7 +91,7 @@ class box_data:
 
     def set_delta(self,delta):
         self.delta = delta
-        print(delta)
+        # print(delta)
 
 
     def isTimeOut(self):
