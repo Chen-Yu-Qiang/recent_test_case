@@ -5,7 +5,10 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist
 import threading
 import time
+import numpy as np
+from std_msgs.msg import Float32
 
+ang=1.571
 class box_data:
     def __init__(self):
         self.x=0
@@ -123,12 +126,25 @@ def get_deltaXYZ(p1,p2):
 box_data_r=box_data()
 box_data_g=box_data()
 box_data_b=box_data()
-box_data_r.pixAT1m_=190
-box_data_g.pixAT1m_=175
-box_data_b.pixAT1m_=186
+box_data_r.pixAT1m_=184
+box_data_g.pixAT1m_=184
+box_data_b.pixAT1m_=184
 
 
+def cb_ang(data):
+    global ang
+    ang=-data.data+1.571
 
+def Rz(data):
+    global ang
+    
+    # ang=0
+    out_msg=Twist()
+    out_msg.linear.x = data.linear.x*(np.cos(ang))-data.linear.y*(np.sin(-ang))
+    out_msg.linear.y = data.linear.x*(np.sin(-ang))+data.linear.y*(np.cos(ang))
+    out_msg.linear.z = data.linear.z 
+    print(data,out_msg)
+    return out_msg
 
 def cb_box_r(data):
     global box_data_r
@@ -147,6 +163,7 @@ rospy.init_node('link_box_node', anonymous=True)
 box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
 box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
 box_sub_b = rospy.Subscriber('box_in_img_b', Point, cb_box_b)
+ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
@@ -170,7 +187,7 @@ while  not rospy.is_shutdown():
 
 
     if not box_data_r.isTimeOut():
-        box_pub_m.publish(box_data_r.getXYZDelta())
+        box_pub_m.publish(Rz(box_data_r.getXYZDelta()))
         if (not box_data_g.isTimeOut()) and box_data_r.getXYZ().linear.x>0.9:
             r2g_msg=get_deltaXYZ(box_data_r,box_data_g)
             if r2g_msg.linear.x==0 and r2g_msg.linear.y==0 and r2g_msg.linear.z==0:
@@ -184,7 +201,7 @@ while  not rospy.is_shutdown():
                 else:
                     box_pub_r2b.publish(r2b_msg)
     elif not box_data_g.isTimeOut():
-        box_pub_m.publish(box_data_g.getXYZDelta())
+        box_pub_m.publish(Rz(box_data_g.getXYZDelta()))
         if (not box_data_b.isTimeOut()) and box_data_b.getXYZ().linear.x>0.9:
             r2b_msg=get_deltaXYZ(box_data_g,box_data_b)
             if r2b_msg.linear.x==0 and r2b_msg.linear.y==0 and r2b_msg.linear.z==0:

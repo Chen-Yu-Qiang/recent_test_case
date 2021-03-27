@@ -7,7 +7,6 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 import time
 from std_msgs.msg import Float32
-from std_msgs.msg import Float32
 def cb_box(data):
     global P,X
     ang=12*np.pi/180
@@ -152,6 +151,8 @@ R3 = np.eye(1)
 P = np.eye(10) 
 X=np.zeros((10,1))
 X[0]=1.5
+
+X[9]=np.pi/2
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)

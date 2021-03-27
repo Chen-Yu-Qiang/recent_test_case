@@ -8,10 +8,12 @@ from control_msgs.msg import PidState
 import threading
 import time
 import numpy as np
+from std_msgs.msg import Float32
 
 box_x=0
 box_y=0
 box_z=1
+box_ang=90
 box_newTime=time.time()
 is_takeoff=1
 l_flag=0
@@ -33,12 +35,20 @@ def cb_land(data):
     is_takeoff=0   
 
 def cb_ref(data):
-    global ref_lock,x_d,y_d,z_d
+    global ref_lock,x_d,y_d,z_d,ang_d
     ref_lock.acquire()
     x_d=data.linear.x
     y_d=data.linear.y
     z_d=data.linear.z
+    ang_d=data.angular.z
     ref_lock.release()
+
+def cb_ang(data):
+    global ang_lock,box_ang
+    ang_lock.acquire()
+    box_ang=data.data
+    ang_lock.release()
+
 isSIM=rospy.get_param('isSIM')
 
 if isSIM==1:
@@ -50,28 +60,34 @@ else:
 
 rospy.init_node('control_val_node_kf', anonymous=True)
 box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
+ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 cmd_val_pub = rospy.Publisher('tello/cmd_vel', Twist, queue_size=1)
 x_pid_pub = rospy.Publisher('x_pid', PidState, queue_size=1)
 y_pid_pub = rospy.Publisher('y_pid', PidState, queue_size=1)
 z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
+ang_pid_pub = rospy.Publisher('ang_pid', PidState, queue_size=1)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
 rate = rospy.Rate(30)
 
 box_lock=threading.Lock()
+ang_lock=threading.Lock()
 ref_lock=threading.Lock()
 
 cmd_val_pub_msg=Twist()
 x_d = 1
 y_d = 0
 z_d = 0
+ang_d=90
 err_x_last=0
 err_y_last=0
 err_z_last=0
+err_ang_last=0
 err_x_int=0
 err_y_int=0
 err_z_int=0
+err_ang_int=0
 while  not rospy.is_shutdown():
     if is_takeoff:
 
@@ -83,16 +99,20 @@ while  not rospy.is_shutdown():
         z_now = box_z
         box_lock.release()
 
+        ang_lock.acquire()
+        ang_now = box_ang
+        ang_lock.release()
 
         x_pid=PidState()
         y_pid=PidState()
         z_pid=PidState()
-
+        ang_pid=PidState()
 
         ref_lock.acquire()
         err_x = x_d - x_now
         err_y = y_d - y_now
         err_z = z_d - z_now
+        err_ang = ang_d - ang_now
         ref_lock.release()        
 
 
@@ -111,6 +131,11 @@ while  not rospy.is_shutdown():
         err_z_dif = (err_z - err_z_last) / d_t
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
+
+
+        err_ang_dif = (err_ang - err_ang_last) / d_t
+        err_ang_int = err_ang_int + err_ang * d_t
+        err_ang_last = err_ang
         
         kp = 1.5
         ki = 0
@@ -163,15 +188,30 @@ while  not rospy.is_shutdown():
 
 
 
+        kp = 1
+        ki = 0
+        kd = 0
+        cmd_ang=kp*err_ang+ki*err_ang_int+kd*err_ang_dif
+        ang_pid.error=err_ang
+        ang_pid.p_error=err_ang
+        ang_pid.i_error=err_ang_int
+        ang_pid.d_error=err_ang_dif
+        ang_pid.p_term=kp
+        ang_pid.i_term=ki
+        ang_pid.d_term=kd
+        ang_pid.output=cmd_ang
+
 
         if l_flag==0:
             cmd_val_pub_msg.linear.x = cmd_y
             cmd_val_pub_msg.linear.y = -cmd_x
             cmd_val_pub_msg.linear.z = cmd_z
+            cmd_val_pub_msg.angular.z = cmd_ang
         else:
             cmd_val_pub_msg.linear.x = 0
             cmd_val_pub_msg.linear.y = 0
-            cmd_val_pub_msg.linear.z = 0
+            cmd_val_pub_msg.angular.z = 0
+            cmd_val_pub_msg.angular.z = 0
 
 
         if abs(cmd_val_pub_msg.linear.x)>2:
@@ -180,6 +220,8 @@ while  not rospy.is_shutdown():
             cmd_val_pub_msg.linear.y=cmd_val_pub_msg.linear.y/abs(cmd_val_pub_msg.linear.y)*2
         if abs(cmd_val_pub_msg.linear.z)>2:
             cmd_val_pub_msg.linear.z=cmd_val_pub_msg.linear.z/abs(cmd_val_pub_msg.linear.z)*2
+        if abs(cmd_val_pub_msg.angular.z)>2:
+            cmd_val_pub_msg.angular.z=cmd_val_pub_msg.angular.z/abs(cmd_val_pub_msg.angular.z)*2
         
         #print(cmd_val_pub_msg.linear)
 
@@ -191,5 +233,6 @@ while  not rospy.is_shutdown():
         x_pid_pub.publish(x_pid)
         y_pid_pub.publish(y_pid)
         z_pid_pub.publish(z_pid)
+        ang_pid_pub.publish(ang_pid)
 
     rate.sleep()

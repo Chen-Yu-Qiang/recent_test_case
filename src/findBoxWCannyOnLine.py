@@ -59,7 +59,7 @@ class image_converter:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             r,g,b,ang=findBoxWCanny.findRGB(cv_image)
             if not ang is None:
-                if ang<150 and ang>30:
+                if ang<2.618 and ang>0.524:
                     pub_ang.publish(ang)
             if not r is None:
                 # print(r)
@@ -99,7 +99,8 @@ class image_converter:
             imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(box_y),(1130,320),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(box_z),(1130,360),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
-            imgAndState = cv2.putText(imgAndState,str(ang),(1130,400),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            if not ang is None:
+                imgAndState = cv2.putText(imgAndState,str(ang*57.296),(1130,400),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(x_d),(1130,435),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(y_d),(1130,475),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(z_d),(1130,515),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)

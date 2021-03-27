@@ -32,7 +32,7 @@ HSVrang={
 }
 def findRect(img,color):
     global HSVrang
-    tm_hour=20
+    tm_hour=10
 
     # convert to HSV
 
@@ -454,7 +454,7 @@ def vp2ang(ph,pv):
         r3=-(k_inv_pv)/(np.linalg.norm(k_inv_pv))
     r1=np.cross(r2.reshape((1,3))[0],r3.reshape((1,3))[0])
     R=np.array([[r1[0],r2[0][0],r3[0][0]],[r1[1],r2[1][0],r3[1][0]],[r1[2],r2[2][0],r3[2][0]]])
-    return np.arctan2(r2[0],r2[2])[0]*57.296
+    return np.arctan2(r2[0],r2[2])[0]
 def findRGB(img):
     global r,g,b
     r=None
@@ -511,7 +511,7 @@ def findRGB(img):
     # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # cv2.imshow("a",hsv)
     ang=None
-    if (not r is None )and (not g is None) and (not b is None):
+    if (not r is None )and (not g is None):
         # p1234To3D(img)
         _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r),div1234(g))
         # print(infp_xh,infp_yh)
