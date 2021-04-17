@@ -22,7 +22,7 @@ def cb_box(data):
     K=np.dot(np.dot(P,np.transpose(H1)),np.linalg.inv(S))
     
     X=X+np.dot(K,Y)
-    P=np.dot(np.eye(10)-np.dot(K,H1),P)
+    P=np.dot(np.eye(11)-np.dot(K,H1),P)
 
 def cb_odom(data):
     global P,X
@@ -36,9 +36,11 @@ def cb_odom(data):
     S=np.dot(np.dot(H2,P),np.transpose(H2))+R2
     K=np.dot(np.dot(P,np.transpose(H2)),np.linalg.inv(S))
     X=X+np.dot(K,Y)
-    P=np.dot(np.eye(10)-np.dot(K,H2),P)
+    P=np.dot(np.eye(11)-np.dot(K,H2),P)
 
-def cb_ang(data):
+    cb_ang_imu(data)
+
+def cb_ang_img(data):
     global P,X
     ang=data.data
     
@@ -47,7 +49,18 @@ def cb_ang(data):
     S=np.dot(np.dot(H3,P),np.transpose(H3))+R3
     K=np.dot(np.dot(P,np.transpose(H3)),np.linalg.inv(S))
     X=X+np.dot(K,Y)
-    P=np.dot(np.eye(10)-np.dot(K,H3),P)
+    P=np.dot(np.eye(11)-np.dot(K,H3),P)
+
+def cb_ang_imu(data):
+    global P,X
+    ang=-2*np.arctan2(data.pose.pose.orientation.z,data.pose.pose.orientation.w)
+    
+    Z=np.array([[ang]])
+    Y=Z-np.dot(H4,X)
+    S=np.dot(np.dot(H4,P),np.transpose(H4))+R4
+    K=np.dot(np.dot(P,np.transpose(H4)),np.linalg.inv(S))
+    X=X+np.dot(K,Y)
+    P=np.dot(np.eye(11)-np.dot(K,H4),P)
 
 last_time=time.time()
 last_data=Twist()
@@ -109,26 +122,28 @@ dt=1.0/31
 
 
 F =np.array(
-   [[1,dt,0,0,0,0,0,0,0,0],
-    [0,1,0,0,0,0,0,0,0,0],
-    [0,0,1,dt,0,0,0,0,0,0],
-    [0,0,0,1,0,0,0,0,0,0],
-    [0,0,0,0,1,dt,0,0,0,0],
-    [0,0,0,0,0,1,0,0,0,0],
-    [0,0,0,0,0,0,1,0,0,0],
-    [0,0,0,0,0,0,0,1,0,0],
-    [0,0,0,0,0,0,0,0,1,0],
-    [0,0,0,0,0,0,0,0,0,1]])
+   [[1,dt,0,0,0,0,0,0,0,0,0],
+    [0,1,0,0,0,0,0,0,0,0,0],
+    [0,0,1,dt,0,0,0,0,0,0,0],
+    [0,0,0,1,0,0,0,0,0,0,0],
+    [0,0,0,0,1,dt,0,0,0,0,0],
+    [0,0,0,0,0,1,0,0,0,0,0],
+    [0,0,0,0,0,0,1,0,0,0,0],
+    [0,0,0,0,0,0,0,1,0,0,0],
+    [0,0,0,0,0,0,0,0,1,0,0],
+    [0,0,0,0,0,0,0,0,0,1,0],
+    [0,0,0,0,0,0,0,0,0,0,1]])
 
 H1=np.array(
-   [[1,0,0,0,0,0,0,0,0,0],
-    [0,0,1,0,0,0,0,0,0,0],
-    [0,0,0,0,1,0,0,0,0,0]])
+   [[1,0,0,0,0,0,0,0,0,0,0],
+    [0,0,1,0,0,0,0,0,0,0,0],
+    [0,0,0,0,1,0,0,0,0,0,0]])
 H2=np.array(
-   [[0,1,0,0,0,0,1,0,0,0],
-    [0,0,0,1,0,0,0,1,0,0],
-    [0,0,0,0,0,1,0,0,1,0]])
-H3=np.array([[0,0,0,0,0,0,0,0,0,1]])
+   [[0,1,0,0,0,0,1,0,0,0,0],
+    [0,0,0,1,0,0,0,1,0,0,0],
+    [0,0,0,0,0,1,0,0,1,0,0]])
+H3=np.array([[0,0,0,0,0,0,0,0,0,1,0]])
+H4=np.array([[0,0,0,0,0,0,0,0,0,1,-1]])
 B=np.array(
    [[0.5*dt*dt,0,0],
     [dt,0,0],
@@ -139,24 +154,27 @@ B=np.array(
     [0,0,0],
     [0,0,0],
     [0,0,0],
+    [0,0,0],
     [0,0,0]])
 
-Q = np.eye(10)*0.01
+Q = np.eye(11)*0.01
 Q[6][6]=0.000001
 Q[7][7]=0.000001
 Q[8][8]=0.000001
+Q[10][10]=0.000001
 R1 = np.eye(3)
-R2 = np.eye(3) 
-R3 = np.eye(1) 
-P = np.eye(10) 
-X=np.zeros((10,1))
+R2 = np.eye(3)
+R3 = np.eye(1)
+R4 = np.eye(1)
+P = np.eye(11)
+X=np.zeros((11,1))
 X[0]=1.5
-
 X[9]=np.pi/2
+X[10]=np.pi/2
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
-ang_sub = rospy.Subscriber('from_img_ang', Float32, cb_ang)
+ang_sub = rospy.Subscriber('from_img_ang', Float32, cb_ang_img)
 
 # imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
@@ -185,7 +203,9 @@ while  not rospy.is_shutdown():
     kf_p_msg.linear.x=X[0]
     kf_p_msg.linear.y=X[2]
     kf_p_msg.linear.z=X[4]
+    kf_p_msg.angular.z=X[9]
     kf_p_pub.publish(kf_p_msg)
+    
     kf_v_msg=Twist()
     kf_v_msg.linear.x=X[1]
     kf_v_msg.linear.y=X[3]
@@ -196,6 +216,7 @@ while  not rospy.is_shutdown():
     kf_vmean_msg.linear.x=X[6]
     kf_vmean_msg.linear.y=X[7]
     kf_vmean_msg.linear.z=X[8]
+    kf_vmean_msg.angular.z=X[10]
     kf_vmean_pub.publish(kf_vmean_msg)
     
     kf_ang_pub.publish(X[9])

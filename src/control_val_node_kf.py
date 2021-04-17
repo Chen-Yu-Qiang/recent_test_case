@@ -18,11 +18,12 @@ box_newTime=time.time()
 is_takeoff=1
 l_flag=0
 def cb_box(data):
-    global box_lock,box_x,box_y,box_z,l_flag
+    global box_lock,box_x,box_y,box_z,l_flag,box_ang
     box_lock.acquire()
     box_x=data.linear.x
     box_y=data.linear.y
     box_z=data.linear.z
+    box_ang=data.angular.z
     box_lock.release()
 
 def cb_takeoff(data):
@@ -43,11 +44,6 @@ def cb_ref(data):
     ang_d=data.angular.z
     ref_lock.release()
 
-def cb_ang(data):
-    global ang_lock,box_ang
-    ang_lock.acquire()
-    box_ang=data.data
-    ang_lock.release()
 
 isSIM=rospy.get_param('isSIM')
 
@@ -60,7 +56,6 @@ else:
 
 rospy.init_node('control_val_node_kf', anonymous=True)
 box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
-ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 cmd_val_pub = rospy.Publisher('tello/cmd_vel', Twist, queue_size=1)
 x_pid_pub = rospy.Publisher('x_pid', PidState, queue_size=1)
 y_pid_pub = rospy.Publisher('y_pid', PidState, queue_size=1)
@@ -97,11 +92,9 @@ while  not rospy.is_shutdown():
         x_now = box_x
         y_now = box_y
         z_now = box_z
+        ang_now = box_ang
         box_lock.release()
 
-        ang_lock.acquire()
-        ang_now = box_ang
-        ang_lock.release()
 
         x_pid=PidState()
         y_pid=PidState()
@@ -112,7 +105,12 @@ while  not rospy.is_shutdown():
         err_x = x_d - x_now
         err_y = y_d - y_now
         err_z = z_d - z_now
-        err_ang = ang_d - ang_now
+        if abs(ang_d - ang_now)>abs(ang_d - ang_now+np.pi*2):
+            err_ang = ang_d - ang_now + np.pi*2
+        elif abs(ang_d - ang_now)>abs(ang_d - ang_now-np.pi/2):
+            err_ang = ang_d - ang_now - np.pi*2
+        else:
+            err_ang = ang_d - ang_now
         ref_lock.release()        
 
 
@@ -192,6 +190,7 @@ while  not rospy.is_shutdown():
         ki = 0
         kd = 0
         cmd_ang=kp*err_ang+ki*err_ang_int+kd*err_ang_dif
+        # cmd_ang=cmd_ang
         ang_pid.error=err_ang
         ang_pid.p_error=err_ang
         ang_pid.i_error=err_ang_int
@@ -201,12 +200,13 @@ while  not rospy.is_shutdown():
         ang_pid.d_term=kd
         ang_pid.output=cmd_ang
 
-
         if l_flag==0:
-            cmd_val_pub_msg.linear.x = cmd_y
-            cmd_val_pub_msg.linear.y = -cmd_x
+            # cmd_val_pub_msg.linear.x = cmd_y
+            # cmd_val_pub_msg.linear.y = -cmd_x
+            cmd_val_pub_msg.linear.x = np.cos(ang_now)*cmd_x+np.sin(ang_now)*cmd_y
+            cmd_val_pub_msg.linear.y = -np.sin(ang_now)*cmd_x+np.cos(ang_now)*cmd_y
             cmd_val_pub_msg.linear.z = cmd_z
-            cmd_val_pub_msg.angular.z = cmd_ang
+            cmd_val_pub_msg.angular.z = -cmd_ang
         else:
             cmd_val_pub_msg.linear.x = 0
             cmd_val_pub_msg.linear.y = 0

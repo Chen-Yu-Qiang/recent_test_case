@@ -26,6 +26,8 @@ class box_data:
     def setFromMsg(self,data):
         if data.x * data.y * data.z==0:
             return
+        if data.x<100 or data.x>860:
+            return
         self.lock.acquire()
         self.x = data.x
         self.y = data.y
@@ -44,7 +46,7 @@ class box_data:
         box_pub_msg = Twist()
         box_pub_msg.linear.x = x_now
         box_pub_msg.linear.y = y_now
-        box_pub_msg.linear.z = z_now+0.9
+        box_pub_msg.linear.z = z_now+0.25
 
         return box_pub_msg
 
@@ -66,7 +68,7 @@ class box_data:
         box_pub_msg = Twist()
         box_pub_msg.linear.x = x_now
         box_pub_msg.linear.y = y_now
-        box_pub_msg.linear.z = z_now+0.9
+        box_pub_msg.linear.z = z_now+0.25
 
         p2.lock.acquire()
         pixAT1m=p2.pixAT1m_
@@ -80,7 +82,7 @@ class box_data:
         box_pub_msg_p2 = Twist()
         box_pub_msg_p2.linear.x = x_now
         box_pub_msg_p2.linear.y = y_now
-        box_pub_msg_p2.linear.z = z_now+0.9
+        box_pub_msg_p2.linear.z = z_now+0.25
         return box_pub_msg,box_pub_msg_p2
 
     def getXYZDelta(self):
@@ -105,8 +107,8 @@ class box_data:
 
 def get_deltaXYZ(p1,p2):
     delta_msg = Twist()
-    x_margin = 60
-    y_margin = 60
+    x_margin = 100
+    y_margin = 100
     if p1.isTimeOut() or p2.isTimeOut() or p1.x>960-x_margin or p1.x<x_margin or p1.y>720-y_margin or p1.y<y_margin:
         delta_msg.linear.x = 0
         delta_msg.linear.y = 0
@@ -143,7 +145,7 @@ def Rz(data):
     out_msg.linear.x = data.linear.x*(np.cos(ang))-data.linear.y*(np.sin(-ang))
     out_msg.linear.y = data.linear.x*(np.sin(-ang))+data.linear.y*(np.cos(ang))
     out_msg.linear.z = data.linear.z 
-    print(data,out_msg)
+    # print(data,out_msg)
     return out_msg
 
 def cb_box_r(data):

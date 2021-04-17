@@ -29,7 +29,16 @@ def cb_from_box_r2b(data):
     global r2b_msg
     r2b_msg=data
 
-    
+
+def cheak_ang_range(i):
+    if i>np.pi/2*3:
+        i=i-2*np.pi
+        return cheak_ang_range(i)
+    elif i<np.pi*(-0.5):
+        i=i+np.pi*2
+        return cheak_ang_range(i)
+    else:
+        return i
 
 
 rospy.init_node('ref_node_case2', anonymous=True)
@@ -54,7 +63,7 @@ while  not rospy.is_shutdown():
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 1.5
+                ref_pub_msg.linear.x = 2
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0.9
                 ref_pub_msg.angular.z = 90.0/57.296
@@ -66,34 +75,50 @@ while  not rospy.is_shutdown():
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
+                # ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.x = 3
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0.9
                 ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==2:
-            if t>=30:
+            if t>=90:
                 m=3
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
+                # ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.x = 3
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0.9
-                ref_pub_msg.angular.z = 70.0/57.296
+                # ref_pub_msg.angular.z = 70.0/57.296
+                ref_pub_msg.angular.z = cheak_ang_range((90.0-t*2)/57.296)
                 ref_pub.publish(ref_pub_msg)
         if m==3:
-            if t>=30:
+            if t>=90:
                 m=4
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
+                ref_pub_msg.linear.x = 3
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 0.9
-                ref_pub_msg.angular.z = 110.0/57.296
+                # ref_pub_msg.angular.z = 90.0/57.296
+                ref_pub_msg.angular.z = cheak_ang_range((270-t*2)/57.296)
+                ref_pub.publish(ref_pub_msg)
+        if m==4:
+            if t>=30:
+                m=5
+                t=float(0)
+            else:
+                t=t+0.05
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 0.9
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
        
     rate.sleep()

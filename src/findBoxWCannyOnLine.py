@@ -17,22 +17,25 @@ import time
 box_x=0
 box_y=0
 box_z=1
+box_t=0
 x_d = 1
 y_d = 0
 z_d = 0
 power_last=100
 def cb_box(data):
-    global box_x,box_y,box_z
+    global box_x,box_y,box_z,box_t
     box_x=data.linear.x
     box_y=data.linear.y
     box_z=data.linear.z
+    box_t=data.angular.z
 
-
+ang_d=1.571
 def cb_ref(data):
-    global x_d,y_d,z_d
+    global x_d,y_d,z_d,ang_d
     x_d=data.linear.x
     y_d=data.linear.y
     z_d=data.linear.z
+    ang_d=data.angular.z
 
 def cb_power(data):
     global power_last
@@ -99,11 +102,11 @@ class image_converter:
             imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(box_y),(1130,320),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(box_z),(1130,360),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
-            if not ang is None:
-                imgAndState = cv2.putText(imgAndState,str(ang*57.296),(1130,400),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(box_t*57.296),(1130,400),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(x_d),(1130,435),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(y_d),(1130,475),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             imgAndState = cv2.putText(imgAndState,str(z_d),(1130,515),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
+            imgAndState = cv2.putText(imgAndState,str(ang_d*57.296),(1130,555),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             cv2.imshow('addbox', imgAndState)
             self.isdoing=0
             cv2.waitKey(1)

@@ -28,11 +28,11 @@ HSVrang={
     "gL":[67, 102, 109],
     "gH":[78, 229, 251],
     "bL":[103, 126, 100],
-    "bH":[116, 210, 180],
+    "bH":[116, 210, 180]
 }
 def findRect(img,color):
     global HSVrang
-    tm_hour=10
+    tm_hour=20
 
     # convert to HSV
 
@@ -169,7 +169,7 @@ def findCanny(img,color):
     # print(image.shape)
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    blurred = cv2.GaussianBlur(gray, (3, 3), 0)
+    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     # cv2.imshow('blurred', blurred)
     canny=blurred[y_min:y_max,x_min:x_max]
     # cv2.imshow('canny1'+color, canny)
@@ -454,6 +454,7 @@ def vp2ang(ph,pv):
         r3=-(k_inv_pv)/(np.linalg.norm(k_inv_pv))
     r1=np.cross(r2.reshape((1,3))[0],r3.reshape((1,3))[0])
     R=np.array([[r1[0],r2[0][0],r3[0][0]],[r1[1],r2[1][0],r3[1][0]],[r1[2],r2[2][0],r3[2][0]]])
+    # print(r2)
     return np.arctan2(r2[0],r2[2])[0]
 def findRGB(img):
     global r,g,b
@@ -487,23 +488,29 @@ def findRGB(img):
     # findCanny(img,"r")
     # findCanny(img,"g")
     # findCanny(img,"b")
- 
+    eee=0
     if not r is None:
         div1234_point=div1234(r)
         x,y,w,h,a= xywh(div1234_point)
         img=cv2.circle(img, (x,y), 2, 255)
+        if x<100 or x>860:
+            eee=1
         # print("r",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not g is None:
         div1234_point=div1234(g)
         x,y,w,h,a= xywh(div1234_point)
         img=cv2.circle(img, (x,y), 2, 255)
+        if x<100 or x>860:
+            eee=1
         # print("g",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not b is None:
         div1234_point=div1234(b)
         x,y,w,h,a= xywh(div1234_point)
         img=cv2.circle(img, (x,y), 2, 255)
+        if x<100 or x>860:
+            eee=1
         # print("b",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     cv2.polylines(img, [r,g,b], True, ( 0,255, 0), 1)
@@ -511,13 +518,14 @@ def findRGB(img):
     # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # cv2.imshow("a",hsv)
     ang=None
-    if (not r is None )and (not g is None):
+    if (not r is None )and (not g is None) and eee==0:
         # p1234To3D(img)
         _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r),div1234(g))
-        # print(infp_xh,infp_yh)
+        # print(infp_xh,infp_yh,m1,c1,m2,c2)
         img=cv2.line(img,(0,int(c1)),(960,int(960*m1+c1)),(255, 0, 0), 1)
         img=cv2.line(img,(0,int(c2)),(960,int(960*m2+c2)),(255, 0, 0), 1)
         ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
+        # print("h1",ang)
     cv2.imshow("a",img)
     
 
@@ -569,7 +577,20 @@ def twoLineAngH(pr,pg):
     delta=np.arctan(a)-np.arctan(c)
     x=-(b - d)/(a - c)
     y=(a*d - c*b)/(a - c)
+
     return delta,a,b,c,d,x,y
+
+
+def twoLineAngH2(pr,pg):
+    # (x1,y1)  (x3,y3)
+    # (x4,y4)  (x2,y2)
+    [[x11,y11],[x12,y12],[x13,y13],[x14,y14]]=pr
+    [[x21,y21],[x22,y22],[x23,y23],[x24,y24]]=pg
+    A=np.array([[(y13-y11),(x11-x13)],[(y13-y21),(x21-x13)],[(y23-y21),(x21-x23)],[(y12-y14),(x14-x12)],[(y12-y24),(x24-x12)],[(y22-y24),(x24-x22)]])
+    y=np.array([(x11*y13-x13*y11),(x21*y13-x13*y21),(x21*y23-x23*y21),(x14*y12-x12*y14),(x24*y12-x12*y24),(x24*y22-x22*y24)])
+    a,b=np.linalg.lstsq(A, y, rcond=None)[0]
+
+    return a,b
 def twoLineAngV(pg,pb):
     # (x1,y1)  (x3,y3)
     # (x4,y4)  (x2,y2)
