@@ -32,7 +32,7 @@ HSVrang={
 }
 def findRect(img,color):
     global HSVrang
-    tm_hour=20
+    tm_hour=10
 
     # convert to HSV
 

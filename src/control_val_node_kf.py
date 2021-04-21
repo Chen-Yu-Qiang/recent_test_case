@@ -107,7 +107,7 @@ while  not rospy.is_shutdown():
         err_z = z_d - z_now
         if abs(ang_d - ang_now)>abs(ang_d - ang_now+np.pi*2):
             err_ang = ang_d - ang_now + np.pi*2
-        elif abs(ang_d - ang_now)>abs(ang_d - ang_now-np.pi/2):
+        elif abs(ang_d - ang_now)>abs(ang_d - ang_now-np.pi*2):
             err_ang = ang_d - ang_now - np.pi*2
         else:
             err_ang = ang_d - ang_now

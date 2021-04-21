@@ -7,8 +7,9 @@ from nav_msgs.msg import Odometry
 from sensor_msgs.msg import Imu
 import time
 from std_msgs.msg import Float32
+import kf_lib
 def cb_box(data):
-    global P,X
+    global measure_x_p,measure_y_p,measure_z_p
     ang=12*np.pi/180
     if abs(data.linear.z)>5 or abs(data.linear.y)>5 or abs(data.linear.x)>5 :
         return
@@ -16,161 +17,87 @@ def cb_box(data):
     box_y=data.linear.y
     box_z=data.linear.x*np.sin(ang) + data.linear.z*np.cos(ang)
     
-    Z=np.array([[box_x],[box_y],[box_z]])
-    Y=Z-np.dot(H1,X)
-    S=np.dot(np.dot(H1,P),np.transpose(H1))+R1
-    K=np.dot(np.dot(P,np.transpose(H1)),np.linalg.inv(S))
-    
-    X=X+np.dot(K,Y)
-    P=np.dot(np.eye(11)-np.dot(K,H1),P)
+
+    measure_x_p.update([[box_x]])
+    measure_y_p.update([[box_y]])
+    measure_z_p.update([[box_z]])
 
 def cb_odom(data):
-    global P,X
+    global measure_x_v,measure_y_v,measure_z_v
     ang=12*np.pi/180
     vx = -data.twist.twist.angular.x
     vy = data.twist.twist.angular.y
     vz = -data.twist.twist.angular.z
     
-    Z=np.array([[vx],[vy],[vz]])
-    Y=Z-np.dot(H2,X)
-    S=np.dot(np.dot(H2,P),np.transpose(H2))+R2
-    K=np.dot(np.dot(P,np.transpose(H2)),np.linalg.inv(S))
-    X=X+np.dot(K,Y)
-    P=np.dot(np.eye(11)-np.dot(K,H2),P)
-
+    measure_x_v.update([[vx]])
+    measure_y_v.update([[vy]])
+    measure_z_v.update([[vz]])
     cb_ang_imu(data)
 
-def cb_ang_img(data):
-    global P,X
-    ang=data.data
+class ang_cont:
+    def __init__(self,t0=0):
+        self.r=0
+        self.unitCircle=np.pi*2
+        self.theta=t0
     
-    Z=np.array([[ang]])
-    Y=Z-np.dot(H3,X)
-    S=np.dot(np.dot(H3,P),np.transpose(H3))+R3
-    K=np.dot(np.dot(P,np.transpose(H3)),np.linalg.inv(S))
-    X=X+np.dot(K,Y)
-    P=np.dot(np.eye(11)-np.dot(K,H3),P)
+    def update(self,t):
+        if t-self.t>1.8*self.unitCircle:
+            self.r=self.r-1
+        if t-self.t<(-1.8)*self.unitCircle:
+            self.r=self.r+1
+        self.t=t
+        return t+self.r*self.unitCircle
+
+
+ang_imu_obj=ang_cont()
+def cb_ang_img(data):
+    global measure_th_vp,ang_imu_obj
+    ang=data.data+ang_imu_obj.r*ang_imu_obj.unitCircle
+    
+    measure_th_vp.update([[ang]])
 
 def cb_ang_imu(data):
-    global P,X
+    global measure_th_imu,ang_imu_obj
     ang=-2*np.arctan2(data.pose.pose.orientation.z,data.pose.pose.orientation.w)
-    
-    Z=np.array([[ang]])
-    Y=Z-np.dot(H4,X)
-    S=np.dot(np.dot(H4,P),np.transpose(H4))+R4
-    K=np.dot(np.dot(P,np.transpose(H4)),np.linalg.inv(S))
-    X=X+np.dot(K,Y)
-    P=np.dot(np.eye(11)-np.dot(K,H4),P)
 
-last_time=time.time()
-last_data=Twist()
-last_data.linear.x=0
-last_data.linear.y=0
-last_data.linear.z=0
-ax=0
-ay=0
-az=0
-def cb_cmd(data):
-    global ax,ay,az,last_data,last_time
-    return
-    delta_t=time.time()-last_time
-    ax=(data.linear.x-last_data.linear.x)/delta_t
-    ay=(data.linear.y-last_data.linear.y)/delta_t
-    az=(data.linear.z-last_data.linear.z)/delta_t
-    last_data=data
-    last_time=time.time()
-def cb_imu(data):
-    global ax,ay,az,last_data,last_time
-    delta_t=time.time()-last_time
-    ax=data.linear_acceleration.x*10
-    ay=data.linear_acceleration.y*10
-    az=data.linear_acceleration.z*10+9.8
-    last_data=data
-    last_time=time.time()
+    ang=ang_imu_obj.update(ang)
+    measure_th_imu.update([[ang]])
+
 
 dt=1.0/31
-# F =np.array(
-#    [[1,dt,0,0,0,0],
-#     [0,1,0,0,0,0],
-#     [0,0,1,dt,0,0],
-#     [0,0,0,1,0,0],
-#     [0,0,0,0,1,dt],
-#     [0,0,0,0,0,1]])
 
-# H1=np.array(
-#    [[1,0,0,0,0,0],
-#     [0,0,1,0,0,0],
-#     [0,0,0,0,1,0]])
-# H2=np.array(
-#    [[0,1,0,0,0,0],
-#     [0,0,0,1,0,0],
-#     [0,0,0,0,0,1]])
+kf_x=kf_lib.KalmanFilter(3)
+kf_x.constantSpeedWDrift(dt,1.5,0,0,0.01,0.01,0.000001)
+measure_x_p=kf_lib.KF_updater(1,kf_x)
+measure_x_p.constantSpeedWDrift_Postition(1)
+measure_x_v=kf_lib.KF_updater(1,kf_x)
+measure_x_v.constantSpeedWDrift_Speed(1)
 
-# B=np.array(
-#    [[0.5*dt*dt,0,0],
-#     [dt,0,0],
-#     [0,0.5*dt*dt,0],
-#     [0,dt,0],
-#     [0,0,0.5*dt*dt],
-#     [0,0,dt]])
+kf_y=kf_lib.KalmanFilter(3)
+kf_y.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
+measure_y_p=kf_lib.KF_updater(1,kf_y)
+measure_y_p.constantSpeedWDrift_Postition(1)
+measure_y_v=kf_lib.KF_updater(1,kf_y)
+measure_y_v.constantSpeedWDrift_Speed(1)
 
-# Q = np.eye(6)*0.01
-# R1 = np.eye(3)
-# R2 = np.eye(3) 
-# P = np.eye(6) 
-# X=np.zeros((6,1))
+kf_z=kf_lib.KalmanFilter(3)
+kf_z.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
+measure_z_p=kf_lib.KF_updater(1,kf_z)
+measure_z_p.constantSpeedWDrift_Postition(1)
+measure_z_v=kf_lib.KF_updater(1,kf_z)
+measure_z_v.constantSpeedWDrift_Speed(1)
+
+kf_th=kf_lib.KalmanFilter(2)
+measure_th_vp=kf_lib.KF_updater(1,kf_th)
+measure_th_imu=kf_lib.KF_updater(1,kf_th)
+kf_th.Q[0][0]=0.000001
+kf_th.Q[1][1]=0.000001
+kf_th.X[0][0]=np.pi/2
+kf_th.X[1][0]=np.pi/2
+measure_th_vp.H=np.array([[1,0]])
+measure_th_imu.H=np.array([[1,-1]])
 
 
-F =np.array(
-   [[1,dt,0,0,0,0,0,0,0,0,0],
-    [0,1,0,0,0,0,0,0,0,0,0],
-    [0,0,1,dt,0,0,0,0,0,0,0],
-    [0,0,0,1,0,0,0,0,0,0,0],
-    [0,0,0,0,1,dt,0,0,0,0,0],
-    [0,0,0,0,0,1,0,0,0,0,0],
-    [0,0,0,0,0,0,1,0,0,0,0],
-    [0,0,0,0,0,0,0,1,0,0,0],
-    [0,0,0,0,0,0,0,0,1,0,0],
-    [0,0,0,0,0,0,0,0,0,1,0],
-    [0,0,0,0,0,0,0,0,0,0,1]])
-
-H1=np.array(
-   [[1,0,0,0,0,0,0,0,0,0,0],
-    [0,0,1,0,0,0,0,0,0,0,0],
-    [0,0,0,0,1,0,0,0,0,0,0]])
-H2=np.array(
-   [[0,1,0,0,0,0,1,0,0,0,0],
-    [0,0,0,1,0,0,0,1,0,0,0],
-    [0,0,0,0,0,1,0,0,1,0,0]])
-H3=np.array([[0,0,0,0,0,0,0,0,0,1,0]])
-H4=np.array([[0,0,0,0,0,0,0,0,0,1,-1]])
-B=np.array(
-   [[0.5*dt*dt,0,0],
-    [dt,0,0],
-    [0,0.5*dt*dt,0],
-    [0,dt,0],
-    [0,0,0.5*dt*dt],
-    [0,0,dt],
-    [0,0,0],
-    [0,0,0],
-    [0,0,0],
-    [0,0,0],
-    [0,0,0]])
-
-Q = np.eye(11)*0.01
-Q[6][6]=0.000001
-Q[7][7]=0.000001
-Q[8][8]=0.000001
-Q[10][10]=0.000001
-R1 = np.eye(3)
-R2 = np.eye(3)
-R3 = np.eye(1)
-R4 = np.eye(1)
-P = np.eye(11)
-X=np.zeros((11,1))
-X[0]=1.5
-X[9]=np.pi/2
-X[10]=np.pi/2
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
@@ -188,40 +115,43 @@ cal_time_pub = rospy.Publisher('cal_time', Float32 , queue_size=1)
 rate = rospy.Rate(1.0/dt)
 while  not rospy.is_shutdown():
     #t=time.time()
-    U=np.array([[ax],[ay],[az]])
-    X = np.dot(F,X)+np.dot(B,U)
-    P = np.dot(np.dot(F,P),np.transpose(F)) + Q
+
+    kf_x.prediction([])
+    kf_y.prediction([])
+    kf_z.prediction([])
+    kf_th.prediction([])
+
 
     kf_pmat_pub_msg=Twist()
-    kf_pmat_pub_msg.linear.x=P[0][0]
-    kf_pmat_pub_msg.linear.y=P[2][2]
-    kf_pmat_pub_msg.linear.z=P[4][4]
+    kf_pmat_pub_msg.linear.x=kf_x.P[0][0]
+    kf_pmat_pub_msg.linear.y=kf_y.P[0][0]
+    kf_pmat_pub_msg.linear.z=kf_z.P[0][0]
+    kf_pmat_pub_msg.angular.z=kf_th.P[0][0]
     kf_pmat_pub.publish(kf_pmat_pub_msg)
 
 
+
     kf_p_msg=Twist()
-    kf_p_msg.linear.x=X[0]
-    kf_p_msg.linear.y=X[2]
-    kf_p_msg.linear.z=X[4]
-    kf_p_msg.angular.z=X[9]
+    kf_p_msg.linear.x=kf_x.X[0][0]
+    kf_p_msg.linear.y=kf_y.X[0][0]
+    kf_p_msg.linear.z=kf_z.X[0][0]
+    kf_p_msg.angular.z=kf_th.X[0][0]
     kf_p_pub.publish(kf_p_msg)
-    
+
     kf_v_msg=Twist()
-    kf_v_msg.linear.x=X[1]
-    kf_v_msg.linear.y=X[3]
-    kf_v_msg.linear.z=X[5]
+    kf_v_msg.linear.x=kf_x.X[1][0]
+    kf_v_msg.linear.y=kf_y.X[1][0]
+    kf_v_msg.linear.z=kf_z.X[1][0]
     kf_v_pub.publish(kf_v_msg)
 
     kf_vmean_msg=Twist()
-    kf_vmean_msg.linear.x=X[6]
-    kf_vmean_msg.linear.y=X[7]
-    kf_vmean_msg.linear.z=X[8]
-    kf_vmean_msg.angular.z=X[10]
+    kf_vmean_msg.linear.x=kf_x.X[2][0]
+    kf_vmean_msg.linear.y=kf_y.X[2][0]
+    kf_vmean_msg.linear.z=kf_z.X[2][0]
+    kf_vmean_msg.angular.z=kf_th.X[1][0]
     kf_vmean_pub.publish(kf_vmean_msg)
     
-    kf_ang_pub.publish(X[9])
-    #cal_time_msg=Float32()
-    #cal_time_msg.data=time.time()-t
-    #cal_time_pub.publish(cal_time_msg)
+    kf_ang_pub.publish(kf_th.X[0][0])
+
     
     rate.sleep()
