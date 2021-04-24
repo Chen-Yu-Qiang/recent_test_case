@@ -41,11 +41,11 @@ class ang_cont:
         self.theta=t0
     
     def update(self,t):
-        if t-self.t>1.8*self.unitCircle:
+        if t-self.theta>0.9*self.unitCircle:
             self.r=self.r-1
-        if t-self.t<(-1.8)*self.unitCircle:
+        if t-self.theta<(-0.9)*self.unitCircle:
             self.r=self.r+1
-        self.t=t
+        self.theta=t
         return t+self.r*self.unitCircle
 
 
@@ -59,6 +59,7 @@ def cb_ang_img(data):
 def cb_ang_imu(data):
     global measure_th_imu,ang_imu_obj
     ang=-2*np.arctan2(data.pose.pose.orientation.z,data.pose.pose.orientation.w)
+
 
     ang=ang_imu_obj.update(ang)
     measure_th_imu.update([[ang]])
@@ -90,8 +91,8 @@ measure_z_v.constantSpeedWDrift_Speed(1)
 kf_th=kf_lib.KalmanFilter(2)
 measure_th_vp=kf_lib.KF_updater(1,kf_th)
 measure_th_imu=kf_lib.KF_updater(1,kf_th)
-kf_th.Q[0][0]=0.000001
-kf_th.Q[1][1]=0.000001
+kf_th.Q[0][0]=0.01
+kf_th.Q[1][1]=0.00000001
 kf_th.X[0][0]=np.pi/2
 kf_th.X[1][0]=np.pi/2
 measure_th_vp.H=np.array([[1,0]])
@@ -104,7 +105,7 @@ box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
 ang_sub = rospy.Subscriber('from_img_ang', Float32, cb_ang_img)
 
 # imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
-cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
+# cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_pmat_pub = rospy.Publisher('kf_pmat', Twist, queue_size=1)
 kf_vmean_pub = rospy.Publisher('kf_vmean', Twist, queue_size=1)

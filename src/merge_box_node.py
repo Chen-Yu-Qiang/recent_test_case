@@ -5,7 +5,8 @@ from geometry_msgs.msg import Point
 from geometry_msgs.msg import Twist
 import threading
 import time
-
+from std_msgs.msg import Float32
+import numpy as np
 class box_data:
     def __init__(self):
         self.x=0
@@ -38,10 +39,25 @@ class box_data:
         return box_pub_msg
     
     def isTimeOut(self):
-        if (time.time()-self.newtime)>0.1:
+        if (time.time()-self.newtime)>0.2:
             return True
         else:
             return False
+ang=1.571
+def cb_ang(data):
+    global ang
+    ang=-data.data+1.571
+
+def Rz(data):
+    global ang
+    
+    # ang=0
+    out_msg=Twist()
+    out_msg.linear.x = data.linear.x*(np.cos(ang))-data.linear.y*(np.sin(-ang))
+    out_msg.linear.y = data.linear.x*(np.sin(-ang))+data.linear.y*(np.cos(ang))
+    out_msg.linear.z = data.linear.z 
+    # print(data,out_msg)
+    return out_msg
 
 
 
@@ -67,7 +83,7 @@ rospy.init_node('merge_box_node', anonymous=True)
 box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
 box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
 box_sub_b = rospy.Subscriber('box_in_img_b', Point, cb_box_b)
-
+ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
@@ -78,23 +94,22 @@ rate = rospy.Rate(30)
 while  not rospy.is_shutdown():
 
 
-    if box_data_b.isTimeOut():
-        mymsg=Twist()
-        mymsg.linear.z=-100
-        box_pub_m.publish(mymsg)
+    if box_data_b.isTimeOut() or box_data_g.isTimeOut() or box_data_r.isTimeOut():
+        pass
+        # mymsg=Twist()
+        # mymsg.linear.z=-100
+        # box_pub_m.publish(mymsg)
+    elif box_data_r.x< box_data_g.x or box_data_r.x< box_data_b.x or box_data_b.y > box_data_g.y or  box_data_b.y > box_data_r.y:
+        pass
     else:
-        box_pub_r_msg=box_data_r.getXYZ(191)
-        box_pub_g_msg=box_data_g.getXYZ(69)
-        box_pub_b_msg=box_data_b.getXYZ(450)
-        box_pub_r.publish(box_pub_r_msg)
-        box_pub_g.publish(box_pub_g_msg)
-        box_pub_b.publish(box_pub_b_msg)
+        box_pub_r_msg=box_data_r.getXYZ(184)
+        box_pub_g_msg=box_data_g.getXYZ(184)
+        box_pub_b_msg=box_data_b.getXYZ(184)
+        box_pub_r.publish(Rz(box_pub_r_msg))
+        box_pub_g.publish(Rz(box_pub_g_msg))
+        box_pub_b.publish(Rz(box_pub_b_msg))
         
-        if box_pub_g_msg.linear.x<0.30:
-            box_pub_m.publish(box_pub_g_msg)
-        elif box_pub_r_msg.linear.x<0.60:
-            box_pub_m.publish(box_pub_r_msg)
-        else:
-            box_pub_m.publish(box_pub_b_msg)
+        box_pub_m.publish(Rz(box_pub_r_msg))
+
     
     rate.sleep()

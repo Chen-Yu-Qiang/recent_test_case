@@ -10,10 +10,10 @@ class KF_updater:
         self.kf=kf
     
     def constantSpeedWDrift_Speed(self,R_v):
-        self.H==np.array([[0,1,1]])
+        self.H=np.array([[0,1,1]])
         self.R[0][0]=R_v
     def constantSpeedWDrift_Postition(self,R_p):
-        self.H==np.array([[1,0,0]])
+        self.H=np.array([[1,0,0]])
         self.R[0][0]=R_p
 
     def update(self,Z):
@@ -22,6 +22,7 @@ class KF_updater:
         K=np.dot(np.dot(self.kf.P,np.transpose(self.H)),np.linalg.inv(S))
         self.kf.X=self.kf.X+np.dot(K,Y)
         self.kf.P=np.dot(np.eye(self.kf.n)-np.dot(K,self.H),self.kf.P)
+        # print(self.kf.X,np.dot(K,Y))
 
 
         

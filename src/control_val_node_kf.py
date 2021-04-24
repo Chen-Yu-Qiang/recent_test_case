@@ -105,12 +105,13 @@ while  not rospy.is_shutdown():
         err_x = x_d - x_now
         err_y = y_d - y_now
         err_z = z_d - z_now
-        if abs(ang_d - ang_now)>abs(ang_d - ang_now+np.pi*2):
-            err_ang = ang_d - ang_now + np.pi*2
-        elif abs(ang_d - ang_now)>abs(ang_d - ang_now-np.pi*2):
-            err_ang = ang_d - ang_now - np.pi*2
-        else:
-            err_ang = ang_d - ang_now
+        # if abs(ang_d - ang_now)>abs(ang_d - ang_now+np.pi*2):
+        #     err_ang = ang_d - ang_now + np.pi*2
+        # elif abs(ang_d - ang_now)>abs(ang_d - ang_now-np.pi*2):
+        #     err_ang = ang_d - ang_now - np.pi*2
+        # else:
+        #     err_ang = ang_d - ang_now
+        err_ang = ang_d - ang_now
         ref_lock.release()        
 
 

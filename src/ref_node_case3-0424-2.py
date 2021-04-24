@@ -58,95 +58,87 @@ while  not rospy.is_shutdown():
     if is_takeoff:
         print(t)
         if m==0:
-            if t>=30:
+            if t>=20:
                 m=1
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2
+                ref_pub_msg.linear.x = 1.5
                 ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0.9
-                ref_pub_msg.angular.z = cheak_ang_range(90.0/57.296)
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==1:
-            if t>=30:
+            if t>=5:
                 m=2
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                # ref_pub_msg.linear.x = 3
-                ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.x = 1.5
                 ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 0.9
-                ref_pub_msg.angular.z = cheak_ang_range(90.0/57.296)
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 180.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==2:
-            if t>=25:
+            if t>=20:
                 m=3
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                # ref_pub_msg.linear.x = 3
-                ref_pub_msg.linear.x = 3*np.cos(t*2/57.296)
-                ref_pub_msg.linear.y = 3*np.sin(t*2/57.296)
-                ref_pub_msg.linear.z = 0.9
-                # ref_pub_msg.angular.z = 70.0/57.296
-                ref_pub_msg.angular.z = cheak_ang_range((90.0+t*2)/57.296)
+                ref_pub_msg.linear.x = 1.5+t/10
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 180.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==3:
-            if t>=30:
+            if t>=10:
                 m=4
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 1.94
-                ref_pub_msg.linear.y = 2.28
-                ref_pub_msg.linear.z = 0.9
-                # ref_pub_msg.angular.z = 90.0/57.296
-                ref_pub_msg.angular.z = cheak_ang_range(140/57.296)
+                ref_pub_msg.linear.x = 3.5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==4:
-            if t>=25:
+            if t>=5:
                 m=5
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 3*np.cos((25-t)*2/57.296)
-                ref_pub_msg.linear.y = 3*np.sin((25-t)*2/57.296)
-                ref_pub_msg.linear.z = 0.9
-                # ref_pub_msg.angular.z = 90.0/57.296
-                ref_pub_msg.angular.z = cheak_ang_range((90.0+(25-t)*2)/57.296)
+                ref_pub_msg.linear.x = 3.5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 180.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==5:
-            if t>=30:
+            if t>=20:
                 m=6
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 1.94
-                ref_pub_msg.linear.y = -2.28
-                ref_pub_msg.linear.z = 0.9
-                ref_pub_msg.angular.z = cheak_ang_range(40/57.296)
+                ref_pub_msg.linear.x = 3.5-t/10
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 180.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==6:
-            if t>=25:
-                m=7
+            if t>=10:
+                m=1
                 t=float(0)
             else:
                 t=t+0.05
                 ref_pub_msg=Twist()
-                # ref_pub_msg.linear.x = 3
-                ref_pub_msg.linear.x = 3*np.cos((t-25)*2/57.296)
-                ref_pub_msg.linear.y = 3*np.sin((t-25)*2/57.296)
-                ref_pub_msg.linear.z = 0.9
-                # ref_pub_msg.angular.z = 70.0/57.296
-                ref_pub_msg.angular.z = cheak_ang_range((90.0+(t-25)*2)/57.296)
+                ref_pub_msg.linear.x = 1.5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
-       
     rate.sleep()
