@@ -11,7 +11,7 @@ import kf_lib
 def cb_box(data):
     global measure_x_p,measure_y_p,measure_z_p
     ang=12*np.pi/180
-    if abs(data.linear.z)>5 or abs(data.linear.y)>5 or abs(data.linear.x)>5 :
+    if abs(data.linear.z)>5 or abs(data.linear.y)>15 or abs(data.linear.x)>5 :
         return
     box_x=data.linear.x*np.cos(ang) - data.linear.z*np.sin(ang)
     box_y=data.linear.y
@@ -109,6 +109,8 @@ ang_sub = rospy.Subscriber('from_img_ang', Float32, cb_ang_img)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
 kf_pmat_pub = rospy.Publisher('kf_pmat', Twist, queue_size=1)
 kf_vmean_pub = rospy.Publisher('kf_vmean', Twist, queue_size=1)
+kf_p_predict_pub = rospy.Publisher('kf_p_predict', Twist, queue_size=1)
+kf_p_measure_pub = rospy.Publisher('kf_p_measure', Twist, queue_size=1)
 kf_v_pub = rospy.Publisher('v_kf', Twist, queue_size=1)
 kf_ang_pub = rospy.Publisher('kf_ang', Float32 , queue_size=1)
 cal_time_pub = rospy.Publisher('cal_time', Float32 , queue_size=1)
@@ -138,6 +140,11 @@ while  not rospy.is_shutdown():
     kf_p_msg.linear.z=kf_z.X[0][0]
     kf_p_msg.angular.z=kf_th.X[0][0]
     kf_p_pub.publish(kf_p_msg)
+    if kf_x.P[0][0]>0.15:
+        kf_p_predict_pub.publish(kf_p_msg)
+    else:
+        kf_p_measure_pub.publish(kf_p_msg)
+
 
     kf_v_msg=Twist()
     kf_v_msg.linear.x=kf_x.X[1][0]

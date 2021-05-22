@@ -86,7 +86,7 @@ err_ang_int=0
 while  not rospy.is_shutdown():
     if is_takeoff:
 
-        d_t = 1
+        d_t = 1/30
 
         box_lock.acquire()
         x_now = box_x

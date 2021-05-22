@@ -150,7 +150,7 @@ def findCanny(img,color):
     x,y,w,h = findRect(img,color)
     
     if w*h==0:
-        print("findRect=0",color)
+        # print("findRect=0",color)
         return
     mask = np.zeros((720,960,1), np.uint8) 
     mask.fill(0)

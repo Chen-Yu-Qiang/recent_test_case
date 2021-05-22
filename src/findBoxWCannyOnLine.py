@@ -21,7 +21,7 @@ box_t=0
 x_d = 1
 y_d = 0
 z_d = 0
-power_last=100
+power_last=-1
 def cb_box(data):
     global box_x,box_y,box_z,box_t
     box_x=data.linear.x
@@ -39,6 +39,7 @@ def cb_ref(data):
 
 def cb_power(data):
     global power_last
+    print(data)
     power_last=data.battery_percentage
 
 

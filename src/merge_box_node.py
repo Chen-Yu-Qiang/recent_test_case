@@ -7,6 +7,25 @@ import threading
 import time
 from std_msgs.msg import Float32
 import numpy as np
+import BoardRanking
+from sensor_msgs.msg import Image
+from tello_driver.msg import TelloStatus
+from cv_bridge import CvBridge, CvBridgeError
+import cv2
+class image_converter:
+    def __init__(self):
+        self.bridge = CvBridge()
+        self.image_sub = rospy.Subscriber("/tello_raw",Image,self.callback)
+        self.cv_image=None
+
+    def callback(self,data):
+        try:
+            self.cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
+            self.cv_image = cv2.cvtColor(self.cv_image, cv2.COLOR_BGR2GRAY)
+        except CvBridgeError as e:
+            print(e)
+
+
 class box_data:
     def __init__(self):
         self.x=0
@@ -59,6 +78,13 @@ def Rz(data):
     # print(data,out_msg)
     return out_msg
 
+m_box=0
+
+def cb_box(data):
+    global m_box,ranking_m_pub
+
+    m_box=BoardRanking.ranking(data)
+    ranking_m_pub.publish(m_box)
 
 
 box_data_r=box_data()
@@ -78,7 +104,7 @@ def cb_box_b(data):
     global box_data_b
     box_data_b.setFromMsg(data)
 
-
+ic = image_converter()
 rospy.init_node('merge_box_node', anonymous=True)
 box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
 box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
@@ -87,21 +113,34 @@ ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
-box_pub_m = rospy.Publisher('from_box_merge', Twist, queue_size=1)
+box_pub_m_before = rospy.Publisher('from_box_merge_before', Twist, queue_size=1)
+box_pub_m_after = rospy.Publisher('from_box_merge', Twist, queue_size=1)
+ranking_m_pub = rospy.Publisher('ranking_m', Float32, queue_size=1)
+box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
 rate = rospy.Rate(30)
 
-
+x_margin = 50
+y_margin = 100
+NeedAruco=1
 while  not rospy.is_shutdown():
 
 
     if box_data_b.isTimeOut() or box_data_g.isTimeOut() or box_data_r.isTimeOut():
+        NeedAruco=1
         pass
-        # mymsg=Twist()
-        # mymsg.linear.z=-100
-        # box_pub_m.publish(mymsg)
     elif box_data_r.x< box_data_g.x or box_data_r.x< box_data_b.x or box_data_b.y > box_data_g.y or  box_data_b.y > box_data_r.y:
         pass
+    elif box_data_r.x < x_margin or box_data_r.x > 960-x_margin  or box_data_r.y < y_margin or box_data_r.y > 720-y_margin:
+        pass
     else:
+        if NeedAruco==1:
+            res=BoardRanking.checkAruco(ic.cv_image)
+            if not res==-1:
+                m_box=res
+                NeedAruco=0
+                ranking_m_pub.publish(m_box+0.1)
+            else:
+                continue
         box_pub_r_msg=box_data_r.getXYZ(184)
         box_pub_g_msg=box_data_g.getXYZ(184)
         box_pub_b_msg=box_data_b.getXYZ(184)
@@ -109,7 +148,10 @@ while  not rospy.is_shutdown():
         box_pub_g.publish(Rz(box_pub_g_msg))
         box_pub_b.publish(Rz(box_pub_b_msg))
         
-        box_pub_m.publish(Rz(box_pub_r_msg))
+        box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
+
+
+        box_pub_m_before.publish(Rz(box_pub_r_msg))
 
     
     rate.sleep()
