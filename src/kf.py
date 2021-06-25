@@ -102,7 +102,7 @@ measure_th_imu.H=np.array([[1,-1]])
 rospy.init_node('kf', anonymous=True)
 odom_sub = rospy.Subscriber("tello/odom", Odometry, cb_odom)
 box_sub = rospy.Subscriber('from_box_merge', Twist, cb_box)
-ang_sub = rospy.Subscriber('from_img_ang', Float32, cb_ang_img)
+ang_sub = rospy.Subscriber('from_img_ang2', Float32, cb_ang_img)
 
 # imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 # cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)

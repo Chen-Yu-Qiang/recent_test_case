@@ -57,32 +57,46 @@ class box_data:
         box_pub_msg.linear.z = z_now+0.9
         return box_pub_msg
     
+
+    
+
     def isTimeOut(self):
         if (time.time()-self.newtime)>0.2:
             return True
         else:
             return False
+
+def getInvXYZ(org_msg,img_ang,kf_msg):
+    InvXYZ_msg = Twist()
+    InvXYZ_msg.linear.x = kf_msg.linear.x-org_msg.linear.x
+    InvXYZ_msg.linear.y = kf_msg.linear.y-org_msg.linear.y
+    InvXYZ_msg.linear.z = kf_msg.linear.z-org_msg.linear.z
+    InvXYZ_msg.angular.z = kf_msg.angular.z-img_ang
+
 ang=1.571
 def cb_ang(data):
     global ang
     ang=-data.data+1.571
+def cb_kf_now(data):
+    global ang
+    ang=-data.angular.z+1.571
 
 def Rz(data):
     global ang
     
     # ang=0
     out_msg=Twist()
-    out_msg.linear.x = data.linear.x*(np.cos(ang))-data.linear.y*(np.sin(-ang))
+    out_msg.linear.x = data.linear.x*(np.cos(ang))+data.linear.y*(np.sin(ang))
     out_msg.linear.y = data.linear.x*(np.sin(-ang))+data.linear.y*(np.cos(ang))
     out_msg.linear.z = data.linear.z 
     # print(data,out_msg)
     return out_msg
 
 m_box=0
-
+kf_data=Twist()
 def cb_box(data):
-    global m_box,ranking_m_pub
-
+    global m_box,ranking_m_pub,kf_data
+    kf_data= data
     m_box=BoardRanking.ranking(data)
     ranking_m_pub.publish(m_box)
 
@@ -91,6 +105,10 @@ box_data_r=box_data()
 box_data_g=box_data()
 box_data_b=box_data()
 
+from_img_ang=0
+def cb_img_ang(data):
+    global from_img_ang
+    from_img_ang=data.data
 
 def cb_box_r(data):
     global box_data_r
@@ -110,12 +128,17 @@ box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
 box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
 box_sub_b = rospy.Subscriber('box_in_img_b', Point, cb_box_b)
 ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
+kf_now_sub = rospy.Subscriber('from_kf', Float32, cb_kf_now)
+img_ang_sub=rospy.Subscriber('from_img_ang', Float32, cb_img_ang)
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
 box_pub_m_before = rospy.Publisher('from_box_merge_before', Twist, queue_size=1)
 box_pub_m_after = rospy.Publisher('from_box_merge', Twist, queue_size=1)
+target_pub = rospy.Publisher('target', Twist, queue_size=1)
 ranking_m_pub = rospy.Publisher('ranking_m', Float32, queue_size=1)
+ranking_aruco_pub = rospy.Publisher('ranking_aruco', Float32, queue_size=1)
+img_ang_pub=rospy.Publisher('from_img_ang2', Float32, queue_size=1)
 box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
 rate = rospy.Rate(30)
 
@@ -138,20 +161,26 @@ while  not rospy.is_shutdown():
             if not res==-1:
                 m_box=res
                 NeedAruco=0
-                ranking_m_pub.publish(m_box+0.1)
-            else:
-                continue
-        box_pub_r_msg=box_data_r.getXYZ(184)
-        box_pub_g_msg=box_data_g.getXYZ(184)
-        box_pub_b_msg=box_data_b.getXYZ(184)
-        box_pub_r.publish(Rz(box_pub_r_msg))
-        box_pub_g.publish(Rz(box_pub_g_msg))
-        box_pub_b.publish(Rz(box_pub_b_msg))
-        
-        box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
-
-
-        box_pub_m_before.publish(Rz(box_pub_r_msg))
-
+                ranking_aruco_pub.publish(m_box)
+        if m_box<50:
+            # the board is for positioning
+            box_pub_r_msg=box_data_r.getXYZ(184)
+            box_pub_g_msg=box_data_g.getXYZ(184)
+            box_pub_b_msg=box_data_b.getXYZ(184)
+            box_pub_r.publish(Rz(box_pub_r_msg))
+            box_pub_g.publish(Rz(box_pub_g_msg))
+            box_pub_b.publish(Rz(box_pub_b_msg))
+            box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
+            box_pub_m_before.publish(Rz(box_pub_r_msg))
+            img_ang_pub.publish(img_ang_pub)
+        else:
+            # the board is target
+            box_pub_r_msg=box_data_r.getXYZ(184)
+            box_pub_g_msg=box_data_g.getXYZ(184)
+            box_pub_b_msg=box_data_b.getXYZ(184)
+            box_pub_r.publish(Rz(box_pub_r_msg))
+            box_pub_g.publish(Rz(box_pub_g_msg))
+            box_pub_b.publish(Rz(box_pub_b_msg))
+            target_pub.publish(getInvXYZ(Rz(box_pub_b_msg),from_img_ang,))
     
     rate.sleep()

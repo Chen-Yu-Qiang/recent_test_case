@@ -36,17 +36,16 @@ def ranking(Drone_msg):
 def checkAruco(img):
     aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_100)
     corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict)
-    if len(ids)==0:
+    if ids is None:
         return -1
     else:
-        return ids[0]
+        return ids[0][0]
 
 def gotoOrg(i,data):
     global marker_set
     box_org_pub_msg = data
     box_org_pub_msg.linear.x = data.linear.x+marker_set[i][0]
     box_org_pub_msg.linear.y = data.linear.y+marker_set[i][1]
-    print(marker_set[i][0],marker_set[i][1])
     return box_org_pub_msg
 
 
