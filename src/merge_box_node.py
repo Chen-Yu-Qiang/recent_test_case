@@ -181,6 +181,6 @@ while  not rospy.is_shutdown():
             box_pub_r.publish(Rz(box_pub_r_msg))
             box_pub_g.publish(Rz(box_pub_g_msg))
             box_pub_b.publish(Rz(box_pub_b_msg))
-            target_pub.publish(getInvXYZ(Rz(box_pub_b_msg),from_img_ang,))
+            target_pub.publish(getInvXYZ(Rz(box_pub_b_msg),from_img_ang,)kf_data)
     
     rate.sleep()
