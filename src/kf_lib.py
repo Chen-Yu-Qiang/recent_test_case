@@ -12,8 +12,14 @@ class KF_updater:
     def constantSpeedWDrift_Speed(self,R_v):
         self.H=np.array([[0,1,1]])
         self.R[0][0]=R_v
-    def constantSpeedWDrift_Postition(self,R_p):
+    def constantSpeedWDrift_Position(self,R_p):
         self.H=np.array([[1,0,0]])
+        self.R[0][0]=R_p
+    def constantSpeed_Position(self,R_p):
+        self.H=np.array([[1,0]])
+        self.R[0][0]=R_p
+    def constantPosition_Position(self,R_p):
+        self.H=np.array([[1]])
         self.R[0][0]=R_p
 
     def update(self,Z):
@@ -47,7 +53,16 @@ class KalmanFilter:
         self.X[0][0]=x0_p
         self.X[1][0]=x0_v
         self.X[2][0]=x0_v_drift
-
+    def constantSpeed(self,dt,x0_p,x0_v,Q_p,Q_v):
+        self.F=np.array([[1,dt],[0,1]])
+        self.Q[0][0]=Q_p
+        self.Q[1][1]=Q_v
+        self.X[0][0]=x0_p
+        self.X[1][0]=x0_v
+    def constantPosition(self,dt,x0_p,Q_p):
+        self.F=np.array([[1]])
+        self.Q[0][0]=Q_p
+        self.X[0][0]=x0_p
 
 
 

@@ -1,0 +1,10 @@
+<launch>
+  <!--<node pkg="rosbag" type="play" name="rosbag" required="true" args="/home/yuqiang/1100707/v015g2/2021-07-02-16-13-04.bag"/>
+  <node name="extract" pkg="image_view" type="video_recorder" respawn="false" required="true" output="screen" cwd="ROS_HOME">
+    <remap from="image" to="/tello_raw"/>
+    <param name="filename" type="string" value="/home/yuqiang/1100707/v015g2/tello_raw.avi" />
+    <param name="fps" type="int" value="30" />
+  </node>-->
+  <node pkg="image_transport" type="republish" name="republish" output="screen" args="h264 in:=/tello/image_raw raw out:=/tello_raw"/>
+  <node pkg="recent_test_case" type="rosmsg2mp4.py" name="rosmsg2mp4" output="screen"/>
+</launch>

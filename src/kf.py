@@ -65,26 +65,26 @@ def cb_ang_imu(data):
     measure_th_imu.update([[ang]])
 
 
-dt=1.0/31
+dt=1.0/30
 
 kf_x=kf_lib.KalmanFilter(3)
 kf_x.constantSpeedWDrift(dt,1.5,0,0,0.01,0.01,0.000001)
 measure_x_p=kf_lib.KF_updater(1,kf_x)
-measure_x_p.constantSpeedWDrift_Postition(1)
+measure_x_p.constantSpeedWDrift_Position(1)
 measure_x_v=kf_lib.KF_updater(1,kf_x)
 measure_x_v.constantSpeedWDrift_Speed(1)
 
 kf_y=kf_lib.KalmanFilter(3)
 kf_y.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
 measure_y_p=kf_lib.KF_updater(1,kf_y)
-measure_y_p.constantSpeedWDrift_Postition(1)
+measure_y_p.constantSpeedWDrift_Position(1)
 measure_y_v=kf_lib.KF_updater(1,kf_y)
 measure_y_v.constantSpeedWDrift_Speed(1)
 
 kf_z=kf_lib.KalmanFilter(3)
 kf_z.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
 measure_z_p=kf_lib.KF_updater(1,kf_z)
-measure_z_p.constantSpeedWDrift_Postition(1)
+measure_z_p.constantSpeedWDrift_Position(1)
 measure_z_v=kf_lib.KF_updater(1,kf_z)
 measure_z_v.constantSpeedWDrift_Speed(1)
 

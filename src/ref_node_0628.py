@@ -20,16 +20,11 @@ if isSIM==1:
     is_takeoff=1
 else:
     is_takeoff=0
-r2g_msg=Twist()
-r2b_msg=Twist()
-def cb_from_box_r2g(data):
-    global r2g_msg
-    r2g_msg=data
 
-def cb_from_box_r2b(data):
-    global r2b_msg
-    r2b_msg=data
-
+Target_position=Twist()
+def cb_target(data):
+    global Target_position
+    Target_position=data
 
 def cheak_ang_range(i):
     if i>np.pi/2*3:
@@ -44,15 +39,16 @@ def cheak_ang_range(i):
 
 rospy.init_node('ref_node_case2', anonymous=True)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
-from_box_r2g_sub = rospy.Subscriber('from_box_r2g', Twist, cb_from_box_r2g)
-from_box_r2b_sub = rospy.Subscriber('from_box_r2b', Twist, cb_from_box_r2b)
 ref_pub = rospy.Publisher('ref', Twist, queue_size=1)
 land_pub = rospy.Publisher('tello/land', Empty, queue_size=1)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
+target_sub = rospy.Subscriber('target', Twist, cb_target)
 Ts=0.01
 rate = rospy.Rate(1/Ts)
 
-
+# 37.0 27.7   13.8
+# 36.0 23.0 14.1
+# 39.6  25.9 11.5
 
 m=0
 times=0
@@ -79,34 +75,35 @@ while  not rospy.is_shutdown():
                 t=t+Ts
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 2.5
-                ref_pub_msg.linear.y = -0.45*t
+                ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 1.5
-                ref_pub_msg.angular.z = 90.0/57.296
+                ref_pub_msg.angular.z = (90.0+(90.0/20.0*t))/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==2:
-            if t>=20:
-                m=3
+            if t>=60:
+                m=100
                 t=float(0)
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
-                ref_pub_msg.linear.y = -9.0
-                ref_pub_msg.linear.z = 1.5
-                ref_pub_msg.angular.z = 90.0/57.296
+                ref_pub_msg.linear.x = Target_position.linear.x
+                ref_pub_msg.linear.y = Target_position.linear.y+1.5
+                ref_pub_msg.linear.z = Target_position.linear.z+0.9
+                ref_pub_msg.angular.z = Target_position.angular.z
                 ref_pub.publish(ref_pub_msg)
         if m==3:
-            if t>=20:
+            if t>=30:
                 m=0
                 t=float(0)
+                m=100
                 times=times+1
                 if times==3:
-                    m=4
+                    m=100
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
                 ref_pub_msg.linear.x = 2.5
-                ref_pub_msg.linear.y = -9+0.45*t
+                ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 1.5
                 ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)

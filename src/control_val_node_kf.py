@@ -57,6 +57,7 @@ else:
 rospy.init_node('control_val_node_kf', anonymous=True)
 box_sub = rospy.Subscriber('from_kf', Twist, cb_box)
 cmd_val_pub = rospy.Publisher('tello/cmd_vel', Twist, queue_size=1)
+v_cmd_pub = rospy.Publisher('v_cmd', Twist, queue_size=1)
 x_pid_pub = rospy.Publisher('x_pid', PidState, queue_size=1)
 y_pid_pub = rospy.Publisher('y_pid', PidState, queue_size=1)
 z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
@@ -137,8 +138,8 @@ while  not rospy.is_shutdown():
         err_ang_last = err_ang
         
         kp = 1.1
-        ki = 0
-        kd = 0
+        ki = 0.1
+        kd = 0.8
 
         #if abs(err_x)>0.7:
         #    kp = 10000
@@ -158,9 +159,7 @@ while  not rospy.is_shutdown():
         x_pid.d_term=kd
         x_pid.output=cmd_x
 
-        kp = 1.1
-        ki = 0
-        kd = 0
+
         cmd_y=kp*err_y+ki*err_y_int+kd*err_y_dif
         y_pid.error=err_y
         y_pid.p_error=err_y
@@ -214,18 +213,34 @@ while  not rospy.is_shutdown():
             cmd_val_pub_msg.angular.z = 0
             cmd_val_pub_msg.angular.z = 0
 
-
-        if abs(cmd_val_pub_msg.linear.x)>2:
-            cmd_val_pub_msg.linear.x=cmd_val_pub_msg.linear.x/abs(cmd_val_pub_msg.linear.x)*2
-        if abs(cmd_val_pub_msg.linear.y)>2:
-            cmd_val_pub_msg.linear.y=cmd_val_pub_msg.linear.y/abs(cmd_val_pub_msg.linear.y)*2
-        if abs(cmd_val_pub_msg.linear.z)>2:
-            cmd_val_pub_msg.linear.z=cmd_val_pub_msg.linear.z/abs(cmd_val_pub_msg.linear.z)*2
-        if abs(cmd_val_pub_msg.angular.z)>2:
-            cmd_val_pub_msg.angular.z=cmd_val_pub_msg.angular.z/abs(cmd_val_pub_msg.angular.z)*2
+        LIM=1
+        if abs(cmd_val_pub_msg.linear.x)>LIM:
+            cmd_val_pub_msg.linear.x=cmd_val_pub_msg.linear.x/abs(cmd_val_pub_msg.linear.x)*LIM
+        if abs(cmd_val_pub_msg.linear.y)>LIM:
+            cmd_val_pub_msg.linear.y=cmd_val_pub_msg.linear.y/abs(cmd_val_pub_msg.linear.y)*LIM
+        if abs(cmd_val_pub_msg.linear.z)>LIM:
+            cmd_val_pub_msg.linear.z=cmd_val_pub_msg.linear.z/abs(cmd_val_pub_msg.linear.z)*LIM
+        if abs(cmd_val_pub_msg.angular.z)>LIM:
+            cmd_val_pub_msg.angular.z=cmd_val_pub_msg.angular.z/abs(cmd_val_pub_msg.angular.z)*LIM
         
         #print(cmd_val_pub_msg.linear)
+        v_cmd_msg=Twist()
 
+        
+        
+        v_cmd_msg.linear.x = cmd_x
+        v_cmd_msg.linear.y = cmd_y
+        v_cmd_msg.linear.z = cmd_z
+        v_cmd_msg.angular.z = -cmd_ang
+        if abs(v_cmd_msg.linear.x)>LIM:
+            v_cmd_msg.linear.x=v_cmd_msg.linear.x/abs(v_cmd_msg.linear.x)*LIM
+        if abs(cmd_val_pub_msg.linear.y)>LIM:
+            v_cmd_msg.linear.y=v_cmd_msg.linear.y/abs(v_cmd_msg.linear.y)*LIM
+        if abs(v_cmd_msg.linear.z)>LIM:
+            v_cmd_msg.linear.z=v_cmd_msg.linear.z/abs(v_cmd_msg.linear.z)*LIM
+        if abs(cmd_val_pub_msg.angular.z)>LIM:
+            v_cmd_msg.angular.z=v_cmd_msg.angular.z/abs(v_cmd_msg.angular.z)*LIM
+        v_cmd_pub.publish(v_cmd_msg)
         if isSIM==0:
             cmd_val_pub.publish(cmd_val_pub_msg)
 

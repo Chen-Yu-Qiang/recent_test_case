@@ -71,7 +71,8 @@ def getInvXYZ(org_msg,img_ang,kf_msg):
     InvXYZ_msg.linear.x = kf_msg.linear.x-org_msg.linear.x
     InvXYZ_msg.linear.y = kf_msg.linear.y-org_msg.linear.y
     InvXYZ_msg.linear.z = kf_msg.linear.z-org_msg.linear.z
-    InvXYZ_msg.angular.z = kf_msg.angular.z-img_ang
+    InvXYZ_msg.angular.z = kf_msg.angular.z-img_ang+np.pi/2
+    return InvXYZ_msg
 
 ang=1.571
 def cb_ang(data):
@@ -95,7 +96,8 @@ def Rz(data):
 m_box=0
 kf_data=Twist()
 def cb_box(data):
-    global m_box,ranking_m_pub,kf_data
+    global ranking_m_pub,kf_data,ang
+    ang=-data.angular.z+1.571
     kf_data= data
     m_box=BoardRanking.ranking(data)
     ranking_m_pub.publish(m_box)
@@ -127,12 +129,15 @@ rospy.init_node('merge_box_node', anonymous=True)
 box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
 box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
 box_sub_b = rospy.Subscriber('box_in_img_b', Point, cb_box_b)
-ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
-kf_now_sub = rospy.Subscriber('from_kf', Float32, cb_kf_now)
+# ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
+# kf_now_sub = rospy.Subscriber('from_kf', Float32, cb_kf_now)
 img_ang_sub=rospy.Subscriber('from_img_ang', Float32, cb_img_ang)
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
+box_pub_r_target = rospy.Publisher('from_box_r_target', Twist, queue_size=1)
+box_pub_g_target = rospy.Publisher('from_box_g_target', Twist, queue_size=1)
+box_pub_b_target = rospy.Publisher('from_box_b_target', Twist, queue_size=1)
 box_pub_m_before = rospy.Publisher('from_box_merge_before', Twist, queue_size=1)
 box_pub_m_after = rospy.Publisher('from_box_merge', Twist, queue_size=1)
 target_pub = rospy.Publisher('target', Twist, queue_size=1)
@@ -172,15 +177,16 @@ while  not rospy.is_shutdown():
             box_pub_b.publish(Rz(box_pub_b_msg))
             box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
             box_pub_m_before.publish(Rz(box_pub_r_msg))
-            img_ang_pub.publish(img_ang_pub)
+            img_ang_pub.publish(from_img_ang)
         else:
             # the board is target
-            box_pub_r_msg=box_data_r.getXYZ(184)
-            box_pub_g_msg=box_data_g.getXYZ(184)
-            box_pub_b_msg=box_data_b.getXYZ(184)
-            box_pub_r.publish(Rz(box_pub_r_msg))
-            box_pub_g.publish(Rz(box_pub_g_msg))
-            box_pub_b.publish(Rz(box_pub_b_msg))
-            target_pub.publish(getInvXYZ(Rz(box_pub_b_msg),from_img_ang,)kf_data)
+            box_pub_r_msg_target=box_data_r.getXYZ(184)
+            box_pub_g_msg_target=box_data_g.getXYZ(184)
+            box_pub_b_msg_target=box_data_b.getXYZ(184)
+            box_pub_r_target.publish(Rz(box_pub_r_msg_target))
+            box_pub_g_target.publish(Rz(box_pub_g_msg_target))
+            box_pub_b_target.publish(Rz(box_pub_b_msg_target))
+            target_pub.publish(getInvXYZ(Rz(box_pub_r_msg_target),from_img_ang,kf_data))
+
     
     rate.sleep()
