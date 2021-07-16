@@ -9,7 +9,7 @@ import threading
 import time
 import numpy as np
 from std_msgs.msg import Float32
-
+import filter_lib
 box_x=0
 box_y=0
 box_z=1
@@ -61,7 +61,7 @@ v_cmd_pub = rospy.Publisher('v_cmd', Twist, queue_size=1)
 x_pid_pub = rospy.Publisher('x_pid', PidState, queue_size=1)
 y_pid_pub = rospy.Publisher('y_pid', PidState, queue_size=1)
 z_pid_pub = rospy.Publisher('z_pid', PidState, queue_size=1)
-ang_pid_pub = rospy.Publisher('ang_pid', PidState, queue_size=1)
+ang_pid_pub = rospy.Publisher('th_pid', PidState, queue_size=1)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_sub = rospy.Subscriber('ref', Twist, cb_ref)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
@@ -84,6 +84,13 @@ err_x_int=0
 err_y_int=0
 err_z_int=0
 err_ang_int=0
+
+
+err_x_dif_filter=filter_lib.meanFilter(3)
+err_y_dif_filter=filter_lib.meanFilter(3)
+err_z_dif_filter=filter_lib.meanFilter(3)
+err_ang_dif_filter=filter_lib.meanFilter(3)
+
 while  not rospy.is_shutdown():
     if is_takeoff:
 
@@ -118,22 +125,27 @@ while  not rospy.is_shutdown():
 
 
 
+
         err_x_dif = (err_x - err_x_last) / d_t
+        err_x_dif=err_x_dif_filter.update(err_x_dif)
         err_x_int = err_x_int + err_x * d_t
         err_x_last = err_x
 
         
         err_y_dif = (err_y - err_y_last) / d_t
+        err_y_dif=err_y_dif_filter.update(err_y_dif)
         err_y_int = err_y_int + err_y * d_t
         err_y_last = err_y
 
         
         err_z_dif = (err_z - err_z_last) / d_t
+        err_z_dif=err_z_dif_filter.update(err_z_dif)
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
 
 
         err_ang_dif = (err_ang - err_ang_last) / d_t
+        err_ang_dif=err_ang_dif_filter.update(err_ang_dif)
         err_ang_int = err_ang_int + err_ang * d_t
         err_ang_last = err_ang
         

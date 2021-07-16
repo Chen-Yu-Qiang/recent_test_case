@@ -5,6 +5,7 @@ import cv2
 from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import Image
 from sensor_msgs.msg import Imu
+from std_msgs.msg import Empty
 import datetime
 import os
 import random
@@ -12,13 +13,15 @@ def secnsec2s(sec,nsec):
     return 1.0*sec+nsec*(10**-9)
 
 t0=0
-
+t_tf=0
 def cb_imu(data):
     global t0
-    if t0==0:
+    if t_tf==0:
         t0=secnsec2s(data.header.stamp.secs,data.header.stamp.nsecs)
 
-
+def cb_tf(data):
+    global t0,t_tf
+    t_tf=t0
 
 
 r=random.randint(1,100)
@@ -35,7 +38,8 @@ class image_converter:
         try:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             t=secnsec2s(data.header.stamp.secs,data.header.stamp.nsecs)
-            cv_image = cv2.putText(cv_image,"{:<6.2f}".format(t-t0),(0,75),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,255), 1, cv2.LINE_AA)
+            if not t_tf==0:
+                cv_image = cv2.putText(cv_image,"{:<6.2f}".format(t-t_tf),(0,75),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,255), 1, cv2.LINE_AA)
             t2=datetime.datetime.fromtimestamp(t).strftime('%Y-%m-%d')
             cv_image = cv2.putText(cv_image,t2,(0,25),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,255), 1, cv2.LINE_AA)
             t2=datetime.datetime.fromtimestamp(t).strftime('%H:%M:%S')
@@ -59,6 +63,7 @@ class image_converter:
 
 ic = image_converter()
 rospy.init_node('image_record', anonymous=True)
+tf_sub = rospy.Subscriber('tello/takeoff', Empty, cb_tf)
 imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 rospy.spin()
 ic.mydel()

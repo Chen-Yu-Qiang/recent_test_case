@@ -12,6 +12,7 @@ from sensor_msgs.msg import Image
 from tello_driver.msg import TelloStatus
 from cv_bridge import CvBridge, CvBridgeError
 import cv2
+import filter_lib
 class image_converter:
     def __init__(self):
         self.bridge = CvBridge()
@@ -150,6 +151,10 @@ rate = rospy.Rate(30)
 x_margin = 50
 y_margin = 100
 NeedAruco=1
+
+
+target_filter=filter_lib.meanFilter(3)
+
 while  not rospy.is_shutdown():
 
 
@@ -181,6 +186,7 @@ while  not rospy.is_shutdown():
         else:
             # the board is target
             box_pub_r_msg_target=box_data_r.getXYZ(184)
+            box_pub_r_msg_target=target_filter.update(box_pub_r_msg_target)
             box_pub_g_msg_target=box_data_g.getXYZ(184)
             box_pub_b_msg_target=box_data_b.getXYZ(184)
             box_pub_r_target.publish(Rz(box_pub_r_msg_target))

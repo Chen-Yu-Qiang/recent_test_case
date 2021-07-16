@@ -22,36 +22,36 @@ def cb_box(data):
 
 dt=1.0/30
 
-# kf_x=kf_lib.KalmanFilter(2)
-# kf_x.constantSpeed(dt,2,0,0.01,0.0001)
-# measure_x_p=kf_lib.KF_updater(1,kf_x)
-# measure_x_p.constantSpeed_Position(1)
-
-# kf_y=kf_lib.KalmanFilter(2)
-# kf_y.constantSpeed(dt,-2,0,0.01,0.0001)
-# measure_y_p=kf_lib.KF_updater(1,kf_y)
-# measure_y_p.constantSpeed_Position(1)
-
-# kf_z=kf_lib.KalmanFilter(2)
-# kf_z.constantSpeed(dt,0.4,0,0.0001,0.0001)
-# measure_z_p=kf_lib.KF_updater(1,kf_z)
-# measure_z_p.constantSpeed_Position(1)
-
-
-kf_x=kf_lib.KalmanFilter(1)
-kf_x.constantPosition(dt,2,0.01)
+kf_x=kf_lib.KalmanFilter(2)
+kf_x.constantSpeed(dt,2,0,0.01,0.0001)
 measure_x_p=kf_lib.KF_updater(1,kf_x)
-measure_x_p.constantPosition_Position(1)
+measure_x_p.constantSpeed_Position(1)
 
-kf_y=kf_lib.KalmanFilter(1)
-kf_y.constantPosition(dt,-2,0.01)
+kf_y=kf_lib.KalmanFilter(2)
+kf_y.constantSpeed(dt,-2,0,0.001,0.01)
 measure_y_p=kf_lib.KF_updater(1,kf_y)
-measure_y_p.constantPosition_Position(1)
+measure_y_p.constantSpeed_Position(1)
 
-kf_z=kf_lib.KalmanFilter(1)
-kf_z.constantPosition(dt,0.2,0.01)
+kf_z=kf_lib.KalmanFilter(2)
+kf_z.constantSpeed(dt,0.4,0,0.0001,0.0001)
 measure_z_p=kf_lib.KF_updater(1,kf_z)
-measure_z_p.constantPosition_Position(1)
+measure_z_p.constantSpeed_Position(1)
+
+
+# kf_x=kf_lib.KalmanFilter(1)
+# kf_x.constantPosition(dt,2,0.01)
+# measure_x_p=kf_lib.KF_updater(1,kf_x)
+# measure_x_p.constantPosition_Position(1)
+
+# kf_y=kf_lib.KalmanFilter(1)
+# kf_y.constantPosition(dt,-2,0.01)
+# measure_y_p=kf_lib.KF_updater(1,kf_y)
+# measure_y_p.constantPosition_Position(1)
+
+# kf_z=kf_lib.KalmanFilter(1)
+# kf_z.constantPosition(dt,0.2,0.01)
+# measure_z_p=kf_lib.KF_updater(1,kf_z)
+# measure_z_p.constantPosition_Position(1)
 
 kf_th=kf_lib.KalmanFilter(1)
 kf_th.constantPosition(dt,np.pi,0.01)
@@ -86,9 +86,10 @@ while  not rospy.is_shutdown():
     kf_p_msg=Twist()
     kf_p_msg.linear.x=kf_x.X[0][0]
     kf_p_msg.linear.y=kf_y.X[0][0]
-    # kf_p_msg.linear.z=kf_z.X[0][0]
-    kf_p_msg.linear.z=0.2
-    kf_p_msg.angular.z=kf_th.X[0][0]
+    kf_p_msg.linear.z=kf_z.X[0][0]
+    # kf_p_msg.linear.z=0.2
+    # kf_p_msg.angular.z=kf_th.X[0][0]
+    kf_p_msg.angular.z=np.pi
     kf_p_pub.publish(kf_p_msg)
     # if kf_x.P[0][0]>0.15:
     #     kf_p_predict_pub.publish(kf_p_msg)
@@ -96,11 +97,11 @@ while  not rospy.is_shutdown():
     #     kf_p_measure_pub.publish(kf_p_msg)
 
 
-    # kf_v_msg=Twist()
-    # kf_v_msg.linear.x=kf_x.X[1][0]
-    # kf_v_msg.linear.y=kf_y.X[1][0]
-    # kf_v_msg.linear.z=kf_z.X[1][0]
-    # kf_v_pub.publish(kf_v_msg)
+    kf_v_msg=Twist()
+    kf_v_msg.linear.x=kf_x.X[1][0]
+    kf_v_msg.linear.y=kf_y.X[1][0]
+    kf_v_msg.linear.z=kf_z.X[1][0]
+    kf_v_pub.publish(kf_v_msg)
 
 
     
