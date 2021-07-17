@@ -25,6 +25,7 @@ Target_position=Twist()
 def cb_target(data):
     global Target_position
     Target_position=data
+    Target_position.angular.z=np.pi
 
 def cheak_ang_range(i):
     if i>np.pi/2*3:
@@ -36,6 +37,14 @@ def cheak_ang_range(i):
     else:
         return i
 
+
+def wantPos(Target_position):
+    want_position=Twist()
+    want_position.linear.x = Target_position.linear.x+np.sin(Target_position.angular.z)*1.5
+    want_position.linear.y = Target_position.linear.y-np.cos(Target_position.angular.z)*1.5
+    want_position.linear.z = Target_position.linear.z+0.9
+    want_position.angular.z = Target_position.angular.z
+    return want_position
 
 rospy.init_node('ref_node_case2', anonymous=True)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
@@ -77,32 +86,30 @@ while  not rospy.is_shutdown():
                 ref_pub_msg.angular.z = (90.0+(90.0/20.0*t))/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==2:
+            if t>=5:
+                m=3
+                t=float(0)
+            else:
+                t=t+Ts
+                ref_pub_msg=Twist()
+                want_position=wantPos(Target_position)
+                ref_pub_msg.linear.x = (want_position.linear.x-2.5)/5*t+2.5
+                ref_pub_msg.linear.y = (want_position.linear.y-0)/5*t+0.0
+                ref_pub_msg.linear.z = (want_position.linear.z-1.5)/5*t+1.5
+                ref_pub_msg.angular.z = 180.0/57.296
+                ref_pub.publish(ref_pub_msg)
+        if m==3:
             if t>=60:
                 m=100
                 t=float(0)
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = Target_position.linear.x+np.sin(Target_position.angular.z)*1.5
-                ref_pub_msg.linear.y = Target_position.linear.y-np.cos(Target_position.angular.z)*1.5
-                ref_pub_msg.linear.z = Target_position.linear.z+0.9
-                ref_pub_msg.angular.z = Target_position.angular.z
-                ref_pub.publish(ref_pub_msg)
-        if m==3:
-            if t>=30:
-                m=0
-                t=float(0)
-                m=100
-                times=times+1
-                if times==3:
-                    m=100
-            else:
-                t=t+Ts
-                ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
-                ref_pub_msg.linear.y = 0
-                ref_pub_msg.linear.z = 1.5
-                ref_pub_msg.angular.z = 90.0/57.296
+                want_position=wantPos(Target_position)
+                ref_pub_msg.linear.x = want_position.linear.x
+                ref_pub_msg.linear.y = want_position.linear.y
+                ref_pub_msg.linear.z = want_position.linear.z
+                ref_pub_msg.angular.z = want_position.angular.z
                 ref_pub.publish(ref_pub_msg)
         if m==100:
             land_pub.publish(Empty())
