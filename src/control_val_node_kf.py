@@ -86,10 +86,10 @@ err_z_int=0
 err_ang_int=0
 
 
-err_x_dif_filter=filter_lib.meanFilter(3)
-err_y_dif_filter=filter_lib.meanFilter(3)
-err_z_dif_filter=filter_lib.meanFilter(3)
-err_ang_dif_filter=filter_lib.meanFilter(3)
+err_x_dif_filter=filter_lib.meanFilter(1)
+err_y_dif_filter=filter_lib.meanFilter(1)
+err_z_dif_filter=filter_lib.meanFilter(1)
+err_ang_dif_filter=filter_lib.meanFilter(1)
 
 while  not rospy.is_shutdown():
     if is_takeoff:
@@ -126,26 +126,26 @@ while  not rospy.is_shutdown():
 
 
 
-        err_x_dif = (err_x - err_x_last) / d_t
-        err_x_dif=err_x_dif_filter.update(err_x_dif)
+        err_x_dif_o = (err_x - err_x_last) / d_t
+        err_x_dif=err_x_dif_filter.update(err_x_dif_o)
         err_x_int = err_x_int + err_x * d_t
         err_x_last = err_x
 
         
-        err_y_dif = (err_y - err_y_last) / d_t
-        err_y_dif=err_y_dif_filter.update(err_y_dif)
+        err_y_dif_o = (err_y - err_y_last) / d_t
+        err_y_dif=err_y_dif_filter.update(err_y_dif_o)
         err_y_int = err_y_int + err_y * d_t
         err_y_last = err_y
 
         
-        err_z_dif = (err_z - err_z_last) / d_t
-        err_z_dif=err_z_dif_filter.update(err_z_dif)
+        err_z_dif_o = (err_z - err_z_last) / d_t
+        err_z_dif=err_z_dif_filter.update(err_z_dif_o)
         err_z_int = err_z_int + err_z * d_t
         err_z_last = err_z
 
 
-        err_ang_dif = (err_ang - err_ang_last) / d_t
-        err_ang_dif=err_ang_dif_filter.update(err_ang_dif)
+        err_ang_dif_o = (err_ang - err_ang_last) / d_t
+        err_ang_dif=err_ang_dif_filter.update(err_ang_dif_o)
         err_ang_int = err_ang_int + err_ang * d_t
         err_ang_last = err_ang
         
@@ -165,6 +165,7 @@ while  not rospy.is_shutdown():
         x_pid.error=err_x
         x_pid.p_error=err_x
         x_pid.i_error=err_x_int
+        x_pid.error_dot=err_x_dif_o
         x_pid.d_error=err_x_dif
         x_pid.p_term=kp
         x_pid.i_term=ki
@@ -176,6 +177,7 @@ while  not rospy.is_shutdown():
         y_pid.error=err_y
         y_pid.p_error=err_y
         y_pid.i_error=err_y_int
+        y_pid.error_dot=err_y_dif_o
         y_pid.d_error=err_y_dif
         y_pid.p_term=kp
         y_pid.i_term=ki
@@ -190,6 +192,7 @@ while  not rospy.is_shutdown():
         z_pid.error=err_z
         z_pid.p_error=err_z
         z_pid.i_error=err_z_int
+        z_pid.error_dot=err_z_dif_o
         z_pid.d_error=err_z_dif
         z_pid.p_term=kp
         z_pid.i_term=ki
@@ -206,6 +209,7 @@ while  not rospy.is_shutdown():
         ang_pid.error=err_ang
         ang_pid.p_error=err_ang
         ang_pid.i_error=err_ang_int
+        ang_pid.error_dot=err_ang_dif_o
         ang_pid.d_error=err_ang_dif
         ang_pid.p_term=kp
         ang_pid.i_term=ki

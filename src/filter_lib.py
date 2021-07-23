@@ -23,11 +23,14 @@ class meanFilter:
             return s/len(self.data)
         elif str(type(self.data[0]))=="<class 'geometry_msgs.msg._Twist.Twist'>":
             s=Twist()
+            
             for i in range(len(self.data)):
-                    s.linear.x = s.linear.x + float(self.data[i].linear.x)/len(self.data) 
-                    s.linear.y = s.linear.y + float(self.data[i].linear.y)/len(self.data) 
-                    s.linear.z = s.linear.z + float(self.data[i].linear.z)/len(self.data) 
-                    s.angular.z = s.angular.z + float(self.data[i].angular.z)/len(self.data) 
+                s.linear.x = s.linear.x + float(self.data[i].linear.x)/len(self.data) 
+                s.linear.y = s.linear.y + float(self.data[i].linear.y)/len(self.data) 
+                s.linear.z = s.linear.z + float(self.data[i].linear.z)/len(self.data) 
+                s.angular.z = s.angular.z + float(self.data[i].angular.z)/len(self.data) 
+            s.angular.x = self.data[-1].angular.x
+            
             return s      
 
 if __name__ == '__main__':

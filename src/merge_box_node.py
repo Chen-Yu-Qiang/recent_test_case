@@ -32,10 +32,13 @@ class box_data:
         self.x=0
         self.y=0
         self.w=0
+        self.h=0
+        self.aruco_id=-1
+        self.area=0
         self.lock=threading.Lock()
         self.newtime=time.time()
     
-    def setFromMsg(self,data):
+    def setFromPointMsg(self,data):
         if data.x * data.y * data.z==0:
             return
         self.lock.acquire()
@@ -44,6 +47,19 @@ class box_data:
         self.w = data.z
         self.newtime = time.time()
         self.lock.release()
+    def setFromTwistMsg(self,data):
+        if data.linear.x * data.linear.y * data.angular.x==0:
+            return
+        self.lock.acquire()
+        self.x = data.linear.x
+        self.y = data.linear.y
+        self.h=data.angular.y
+        self.aruco_id=data.linear.z
+        self.area=data.angular.z
+        self.w = data.angular.x
+        self.newtime = time.time()
+        self.lock.release()
+
 
     def getXYZ(self,pixAT1m):
         self.lock.acquire()
@@ -58,14 +74,73 @@ class box_data:
         box_pub_msg.linear.z = z_now+0.9
         return box_pub_msg
     
-
-    
-
     def isTimeOut(self):
         if (time.time()-self.newtime)>0.2:
             return True
         else:
             return False
+
+class board_data:
+    def __init__(self,_ArucoID):
+        self.r=box_data()
+        self.g=box_data()
+        self.b=box_data()
+        self.img_ang=float()
+        self.ArucoID=_ArucoID
+        self.target_filter=filter_lib.meanFilter(3)
+        if self.ArucoID>=50:
+            self.pub=rospy.Publisher('target'+str(self.ArucoID), Twist, queue_size=1)
+
+    def for_positioning(self):
+        box_pub_r_msg=self.r.getXYZ(184)
+        box_pub_g_msg=self.g.getXYZ(184)
+        box_pub_b_msg=self.b.getXYZ(184)
+        box_pub_r.publish(Rz(box_pub_r_msg))
+        box_pub_g.publish(Rz(box_pub_g_msg))
+        box_pub_b.publish(Rz(box_pub_b_msg))
+        box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
+        box_pub_m_before.publish(Rz(box_pub_r_msg))
+        img_ang_pub.publish(self.img_ang)
+
+    def for_target(self):
+        box_pub_r_msg_target=self.TwistAddArucoID(self.r.getXYZ(184))
+        box_pub_r_msg_target=self.target_filter.update(box_pub_r_msg_target)
+        box_pub_g_msg_target=self.TwistAddArucoID(self.g.getXYZ(184))
+        box_pub_b_msg_target=self.TwistAddArucoID(self.b.getXYZ(184))
+        box_pub_r_target.publish(Rz(box_pub_r_msg_target))
+        box_pub_g_target.publish(Rz(box_pub_g_msg_target))
+        box_pub_b_target.publish(Rz(box_pub_b_msg_target))
+        target_pub.publish(getInvXYZ(Rz(box_pub_r_msg_target),self.img_ang,kf_data))
+        self.pub.publish(getInvXYZ(Rz(box_pub_r_msg_target),self.img_ang,kf_data))
+
+    def isTimsOut(self):
+        if self.b.isTimeOut() or self.g.isTimeOut() or self.r.isTimeOut():
+            return 1
+        return 0
+
+    def isOutOfBound(self):
+        x_margin = 50
+        y_margin = 100
+        if self.r.x < x_margin or self.r.x > 960-x_margin  or self.r.y < y_margin or self.r.y > 720-y_margin:
+            return 1
+        if self.g.x < x_margin or self.g.x > 960-x_margin  or self.g.y < y_margin or self.g.y > 720-y_margin:
+            return 1
+        return 0
+
+    def isErrorOrder(self):
+        if self.r.x< self.g.x or self.r.x< self.b.x or self.b.y > self.g.y or  self.b.y > self.r.y:
+            return 1
+        return 0
+    
+    def TwistAddArucoID(self,in_msg):
+        out_msg=Twist()
+        out_msg.linear=in_msg.linear
+        if not self.ArucoID==-1:
+            out_msg.angular.x=self.ArucoID
+            return out_msg
+        else:
+            print("Aruco ID not get")
+            return in_msg
 
 def getInvXYZ(org_msg,img_ang,kf_msg):
     InvXYZ_msg = Twist()
@@ -73,15 +148,21 @@ def getInvXYZ(org_msg,img_ang,kf_msg):
     InvXYZ_msg.linear.y = kf_msg.linear.y-org_msg.linear.y
     InvXYZ_msg.linear.z = kf_msg.linear.z-org_msg.linear.z
     InvXYZ_msg.angular.z = kf_msg.angular.z-img_ang+np.pi/2
+    InvXYZ_msg.angular.x = org_msg.angular.x
     return InvXYZ_msg
 
 ang=1.571
-def cb_ang(data):
-    global ang
-    ang=-data.data+1.571
-def cb_kf_now(data):
-    global ang
-    ang=-data.angular.z+1.571
+
+
+# def cb_ang(data):
+#     # no use function
+#     global ang
+#     ang=-data.data+1.571
+
+# def cb_kf_now(data):
+#     # no use function
+#     global ang
+#     ang=-data.angular.z+1.571
 
 def Rz(data):
     global ang
@@ -91,6 +172,7 @@ def Rz(data):
     out_msg.linear.x = data.linear.x*(np.cos(ang))+data.linear.y*(np.sin(ang))
     out_msg.linear.y = data.linear.x*(np.sin(-ang))+data.linear.y*(np.cos(ang))
     out_msg.linear.z = data.linear.z 
+    out_msg.angular.x = data.angular.x
     # print(data,out_msg)
     return out_msg
 
@@ -104,35 +186,41 @@ def cb_box(data):
     ranking_m_pub.publish(m_box)
 
 
-box_data_r=box_data()
-box_data_g=box_data()
-box_data_b=box_data()
+# box_data_r=box_data()
+# box_data_g=box_data()
+# box_data_b=box_data()
 
-from_img_ang=0
+# from_img_ang=0
+
+board_set=[board_data(i) for i in range(60)]
+
+
+
 def cb_img_ang(data):
-    global from_img_ang
-    from_img_ang=data.data
+    global board_set
+    board_set[int(data.linear.z)].img_ang=data.angular.z
 
 def cb_box_r(data):
-    global box_data_r
-    box_data_r.setFromMsg(data)
+    global board_set
+    board_set[int(data.linear.z)].r.setFromTwistMsg(data)
 
 def cb_box_g(data):
-    global box_data_g
-    box_data_g.setFromMsg(data)
+    global board_set
+    board_set[int(data.linear.z)].g.setFromTwistMsg(data)
 
 def cb_box_b(data):
-    global box_data_b
-    box_data_b.setFromMsg(data)
+    global board_set
+    board_set[int(data.linear.z)].b.setFromTwistMsg(data)
 
-ic = image_converter()
+# ic = image_converter()
 rospy.init_node('merge_box_node', anonymous=True)
-box_sub_r = rospy.Subscriber('box_in_img_r', Point, cb_box_r)
-box_sub_g = rospy.Subscriber('box_in_img_g', Point, cb_box_g)
-box_sub_b = rospy.Subscriber('box_in_img_b', Point, cb_box_b)
+box_sub_r = rospy.Subscriber('box_in_img_r_n', Twist, cb_box_r)
+box_sub_g = rospy.Subscriber('box_in_img_g_n', Twist, cb_box_g)
+box_sub_b = rospy.Subscriber('box_in_img_b_n', Twist, cb_box_b)
 # ang_sub = rospy.Subscriber('kf_ang', Float32, cb_ang)
 # kf_now_sub = rospy.Subscriber('from_kf', Float32, cb_kf_now)
-img_ang_sub=rospy.Subscriber('from_img_ang', Float32, cb_img_ang)
+# img_ang_sub=rospy.Subscriber('from_img_ang', Float32, cb_img_ang)
+img_ang_sub=rospy.Subscriber('from_img_ang_n', Twist, cb_img_ang)
 box_pub_r = rospy.Publisher('from_box_r', Twist, queue_size=1)
 box_pub_g = rospy.Publisher('from_box_g', Twist, queue_size=1)
 box_pub_b = rospy.Publisher('from_box_b', Twist, queue_size=1)
@@ -153,46 +241,20 @@ y_margin = 100
 NeedAruco=1
 
 
-target_filter=filter_lib.meanFilter(3)
+# target_filter=filter_lib.meanFilter(3)
 
 while  not rospy.is_shutdown():
 
-
-    if box_data_b.isTimeOut() or box_data_g.isTimeOut() or box_data_r.isTimeOut():
-        NeedAruco=1
-        pass
-    elif box_data_r.x< box_data_g.x or box_data_r.x< box_data_b.x or box_data_b.y > box_data_g.y or  box_data_b.y > box_data_r.y:
-        pass
-    elif box_data_r.x < x_margin or box_data_r.x > 960-x_margin  or box_data_r.y < y_margin or box_data_r.y > 720-y_margin:
-        pass
-    else:
-        if NeedAruco==1:
-            res=BoardRanking.checkAruco(ic.cv_image)
-            if not res==-1:
-                m_box=res
-                NeedAruco=0
-                ranking_aruco_pub.publish(m_box)
-        if m_box<50:
-            # the board is for positioning
-            box_pub_r_msg=box_data_r.getXYZ(184)
-            box_pub_g_msg=box_data_g.getXYZ(184)
-            box_pub_b_msg=box_data_b.getXYZ(184)
-            box_pub_r.publish(Rz(box_pub_r_msg))
-            box_pub_g.publish(Rz(box_pub_g_msg))
-            box_pub_b.publish(Rz(box_pub_b_msg))
-            box_pub_m_after.publish(BoardRanking.gotoOrg(m_box,Rz(box_pub_r_msg)))
-            box_pub_m_before.publish(Rz(box_pub_r_msg))
-            img_ang_pub.publish(from_img_ang)
-        else:
-            # the board is target
-            box_pub_r_msg_target=box_data_r.getXYZ(184)
-            box_pub_r_msg_target=target_filter.update(box_pub_r_msg_target)
-            box_pub_g_msg_target=box_data_g.getXYZ(184)
-            box_pub_b_msg_target=box_data_b.getXYZ(184)
-            box_pub_r_target.publish(Rz(box_pub_r_msg_target))
-            box_pub_g_target.publish(Rz(box_pub_g_msg_target))
-            box_pub_b_target.publish(Rz(box_pub_b_msg_target))
-            target_pub.publish(getInvXYZ(Rz(box_pub_r_msg_target),from_img_ang,kf_data))
-
     
+    for i in [0]:
+        if board_set[i].isTimsOut() or board_set[i].isOutOfBound() or board_set[i].isErrorOrder():
+            pass
+        else:
+            board_set[i].for_positioning()
+        
+    for i in [51,52]:
+        if board_set[i].isTimsOut() or board_set[i].isOutOfBound() or board_set[i].isErrorOrder():
+            pass
+        else:
+            board_set[i].for_target()
     rate.sleep()

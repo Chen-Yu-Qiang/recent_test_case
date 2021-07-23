@@ -39,9 +39,10 @@ def cheak_ang_range(i):
 
 
 def wantPos(Target_position):
+    dis=1.5
     want_position=Twist()
-    want_position.linear.x = Target_position.linear.x+np.sin(Target_position.angular.z)*1.5
-    want_position.linear.y = Target_position.linear.y-np.cos(Target_position.angular.z)*1.5
+    want_position.linear.x = Target_position.linear.x+np.sin(Target_position.angular.z)*dis
+    want_position.linear.y = Target_position.linear.y-np.cos(Target_position.angular.z)*dis
     want_position.linear.z = Target_position.linear.z+0.9
     want_position.angular.z = Target_position.angular.z
     return want_position

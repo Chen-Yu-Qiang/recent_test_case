@@ -56,8 +56,8 @@ class image_converter:
             print("not start")
             os.remove('output'+str(r)+'.mp4')
         else:
-            print("Save as "+datetime.datetime.fromtimestamp(t0).strftime('%Y-%m-%d %H:%M:%S')+".mp4")
-            os.rename('output'+str(r)+'.mp4',datetime.datetime.fromtimestamp(t0).strftime('%Y-%m-%d %H:%M:%S')+".mp4")
+            print("Save as "+datetime.datetime.fromtimestamp(t0).strftime('%Y-%m-%d %H-%M-%S')+".mp4")
+            os.rename('output'+str(r)+'.mp4',datetime.datetime.fromtimestamp(t0).strftime('%Y-%m-%d %H-%M-%S')+".mp4")
         print("886")
 
 

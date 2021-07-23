@@ -32,7 +32,7 @@ HSVrang={
 }
 def findRect(img,color):
     global HSVrang
-    tm_hour=10
+    tm_hour=20
 
     # convert to HSV
 
@@ -88,8 +88,8 @@ def findRect(img,color):
             upper_b = np.array(HSVrang["bH"])
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_b = np.array([80, 165, 10])
-            upper_b = np.array([117, 250, 120])
+            lower_b = np.array([78, 163, 8])
+            upper_b = np.array([119, 252, 122])
         else:
             lower_b = np.array([108, 126, 124])
             upper_b = np.array([116, 175, 161])
@@ -142,7 +142,7 @@ def findRect(img,color):
 
 def findCanny(img,color):
     global r,g,b
-    bigger=0.01
+    bigger=0.1
     # cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     # cv2.waitKey(1)
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
@@ -175,7 +175,11 @@ def findCanny(img,color):
     # cv2.imshow('canny1'+color, canny)
     # cv2.waitKey(1)
     # print("G",canny.shape)
+    # cv2.imshow('canny'+color, canny)
+    # cv2.waitKey(0)
     canny = cv2.Canny(canny, 70, 120) 
+    # cv2.imshow('canny2'+color, canny)
+    # cv2.waitKey(0)
     # aaa=blurred[y_min:y_max,x_min:x_max]
     # lines = cv2.HoughLines(canny, 1, np.pi / 180, 50)
     # print(lines)
@@ -198,7 +202,7 @@ def findCanny(img,color):
         return
     canny = cv2.GaussianBlur(canny, (3, 3), 0)
     # cv2.imshow('canny'+color, canny)
-    # cv2.waitKey(1)
+    # cv2.waitKey(0)
 
 
     # print("F")
@@ -233,8 +237,8 @@ def findCanny(img,color):
     # cv2.imshow('imageHSV', image)
     # print(approx1)
     if  not len(approx1)==4:
-        print("len(approx1)=",len(approx1),color)
-        print(approx1)
+        # print("len(approx1)=",len(approx1),color)
+        # print(approx1)
         if len(approx1)<4:
             return
         else:
@@ -467,27 +471,27 @@ def findRGB(img):
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
 
     # ===========================Multithreading
-    r_jod=threading.Thread(target = findCanny, args = (img,"r"))
-    g_jod=threading.Thread(target = findCanny, args = (img,"g"))
-    b_jod=threading.Thread(target = findCanny, args = (img,"b"))
-    r_jod.start()
-    # # print("r start")
-    g_jod.start()
-    # # print("g start")
-    b_jod.start()
-    # # print("b start")
-    r_jod.join()
-    # # print("r join")
-    g_jod.join()
-    # # print("g join")
-    b_jod.join()
-    # # print("b join")
-    # # print(xywh(div1234(r))) 
+    # r_jod=threading.Thread(target = findCanny, args = (img,"r"))
+    # g_jod=threading.Thread(target = findCanny, args = (img,"g"))
+    # b_jod=threading.Thread(target = findCanny, args = (img,"b"))
+    # r_jod.start()
+    # # # print("r start")
+    # g_jod.start()
+    # # # print("g start")
+    # b_jod.start()
+    # # # print("b start")
+    # r_jod.join()
+    # # # print("r join")
+    # g_jod.join()
+    # # # print("g join")
+    # b_jod.join()
+    # # # print("b join")
+    # # # print(xywh(div1234(r))) 
 
     # ==========================Single thread
-    # findCanny(img,"r")
-    # findCanny(img,"g")
-    # findCanny(img,"b")
+    findCanny(img,"r")
+    findCanny(img,"g")
+    findCanny(img,"b")
     eee=0
     if not r is None:
         div1234_point=div1234(r)
@@ -606,6 +610,10 @@ def twoLineAngV(pg,pb):
     y=-(b - d)/(a - c)
     x=(a*d - c*b)/(a - c)
     return delta,a,b,c,d,x,y
+
+
+
+
 
 
 def test_0318_t1():
