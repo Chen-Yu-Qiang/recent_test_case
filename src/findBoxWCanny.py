@@ -5,6 +5,8 @@ import numpy as np
 import time
 import threading
 import matplotlib.pyplot as plt
+import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 import pnp
 from cv2 import aruco
 r=None
@@ -32,12 +34,11 @@ HSVrang={
 }
 def findRect(img,color):
     global HSVrang
-    tm_hour=20
-
+    tm_hour=10
     # convert to HSV
-
+    
     hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
-    # print(hsv[360][480])
+
     if color=="g":
         if tm_hour==25:
             lower_g = np.array(HSVrang["gL"])
@@ -88,7 +89,7 @@ def findRect(img,color):
             upper_b = np.array(HSVrang["bH"])
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_b = np.array([78, 163, 8])
+            lower_b = np.array([80, 110, 8])
             upper_b = np.array([119, 252, 122])
         else:
             lower_b = np.array([108, 126, 124])
@@ -96,6 +97,8 @@ def findRect(img,color):
             lower_b = np.array([103, 126, 100])
             upper_b = np.array([116, 210, 180])
         mask=cv2.inRange(hsv, lower_b, upper_b)
+    
+
     
     # cv2.imshow('mask'+str(color), mask)
     # cv2.waitKey(1)
@@ -116,8 +119,9 @@ def findRect(img,color):
     # cv2.imshow('erosion'+str(color), erosion)
     # cv2.waitKey(0)
 
-    _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     
+
+    _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # img2=cv2.drawContours(img,contours,-1,(0,255,0),5)
     # cv2.imshow('erosion2'+str(color), img2)
     # cv2.waitKey(1)
@@ -141,14 +145,21 @@ def findRect(img,color):
     return x,y,w,h
 
 def findCanny(img,color):
-    global r,g,b
+    # global r,g,b
+    if color=="r":
+        r=None
+    if color=="g":
+        g=None
+    if color=="b":
+        b=None
+
     bigger=0.1
     # cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     # cv2.waitKey(1)
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
-    
+
     x,y,w,h = findRect(img,color)
-    
+  
     if w*h==0:
         # print("findRect=0",color)
         return
@@ -198,7 +209,7 @@ def findCanny(img,color):
     # cv2.imshow('aaa'+color, aaa)
     # cv2.waitKey(0)
     if canny is None:
-        # print("canny is none",color)
+        print("canny is none",color)
         return
     canny = cv2.GaussianBlur(canny, (3, 3), 0)
     # cv2.imshow('canny'+color, canny)
@@ -460,16 +471,21 @@ def vp2ang(ph,pv):
     R=np.array([[r1[0],r2[0][0],r3[0][0]],[r1[1],r2[1][0],r3[1][0]],[r1[2],r2[2][0],r3[2][0]]])
     # print(r2)
     return np.arctan2(r2[0],r2[2])[0]
+
+def findCanny_mp(i):
+    return findCanny(i[0],i[1])
+pool=ThreadPool()
 def findRGB(img):
-    global r,g,b
+
     r=None
     g=None
     b=None
-    
     t=time.time()
-
+    
+    
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
-
+    
+    
     # ===========================Multithreading
     # r_jod=threading.Thread(target = findCanny, args = (img,"r"))
     # g_jod=threading.Thread(target = findCanny, args = (img,"g"))
@@ -487,11 +503,15 @@ def findRGB(img):
     # b_jod.join()
     # # # print("b join")
     # # # print(xywh(div1234(r))) 
-
+    res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
+    r=res[0]
+    g=res[1]
+    b=res[2]
     # ==========================Single thread
-    findCanny(img,"r")
-    findCanny(img,"g")
-    findCanny(img,"b")
+    # r=findCanny(img,"r")
+    # g=findCanny(img,"g")
+    # b=findCanny(img,"b")
+
     eee=0
     if not r is None:
         div1234_point=div1234(r)
@@ -530,14 +550,86 @@ def findRGB(img):
         img=cv2.line(img,(0,int(c2)),(960,int(960*m2+c2)),(255, 0, 0), 1)
         ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
         # print("h1",ang)
-    cv2.imshow("a",img)
-    
+    # cv2.imshow("a",img)
+    # cv2.waitKey(0)
 
-
-    cv2.waitKey(1)
-    # print("r,g,b",r,g,b)
-    # print(HSVrang)
     return r,g,b,ang
+
+# pool=mp.Pool(4)
+def findRGB_mp(img):
+    img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
+    r_mp=None
+    g_mp=None
+    b_mp=None
+    t=time.time()
+    res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
+    print(time.time()-t)
+    r_mp=res[0]
+    g_mp=res[1]
+    b_mp=res[2]
+    eee=0
+    if not r_mp is None:
+        div1234_point=div1234(r_mp)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    if not g_mp is None:
+        div1234_point=div1234(g_mp)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    if not b_mp is None:
+        div1234_point=div1234(b_mp)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    ang=None
+    if (not r_mp is None )and (not g_mp is None) and eee==0:
+        # p1234To3D(img)
+        _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r_mp),div1234(g_mp))
+        ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
+    return r_mp,g_mp,b_mp,ang
+
+def findRGB_mp_gl(img):
+    global r,g,b
+    img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
+
+    t=time.time()
+    
+    r_jod=mp.Process(target = findCanny_mp, args = ((img,"r"),))
+    g_jod=mp.Process(target = findCanny_mp, args = ((img,"g"),))
+    b_jod=mp.Process(target = findCanny_mp, args = ((img,"b"),))
+    r_jod.start()
+    g_jod.start()
+    b_jod.start()
+    r_jod.join()
+    g_jod.join()
+    b_jod.join() 
+    print(time.time()-t)
+
+    eee=0
+    if not r is None:
+        div1234_point=div1234(r)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    if not g is None:
+        div1234_point=div1234(g)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    if not b is None:
+        div1234_point=div1234(b)
+        x,y,w,h,a= xywh(div1234_point)
+        if x<100 or x>860:
+            eee=1
+    ang=None
+    if (not r is None )and (not g is None) and eee==0:
+        # p1234To3D(img)
+        _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r),div1234(g))
+        ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
+    return r,g,b,ang
+
 
 def d1d2(x,y):
     t=np.pi/2-np.arccos((0.16+x*x-y*y)/(0.8*x))
@@ -958,8 +1050,66 @@ if __name__ == '__main__':
     # filename="/time_RGB/0318/t6/3003-2784-0318.png"
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)
-    test_0326_t1()
-    # test_0318_t6()
-    # test_0318_t5()
-    # test_0318_t4()
-    # test_0318_t1()
+
+
+
+
+    # filename="/time_RGB/0326/1.png"
+    # img1 = cv2.imread(os.getcwd()+filename)
+    # # img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2HSV) 
+
+
+    # filename="/time_RGB/0326/2.png"   
+    # img2 = cv2.imread(os.getcwd()+filename)
+    # # img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2HSV) 
+
+        
+
+    # filename="/time_RGB/0326/3.png"
+    # img3 = cv2.imread(os.getcwd()+filename)
+    # # img3 = cv2.cvtColor(img3, cv2.COLOR_BGR2HSV) 
+    # t=time.time()
+    # import csv
+    # t_list=[0 for i in range(1000)]
+    # for i in range(1000):
+    #     findRGB(img1)
+
+    #     findRGB(img2)
+
+    #     findRGB(img3)
+    #     t_list[i]=time.time()-t
+    #     t=time.time()
+    # print("========================")
+    # with open('output2.csv', 'w') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     for i in range(1000):
+    #         writer.writerow([t_list[i]])
+
+    #   test mulit target
+    import mulitTarget
+
+
+    filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
+    img = cv2.imread(filename)
+    xyid,ip = mulitTarget.find_aruco_mean(img)
+    img_set = mulitTarget.divImg(ip,img)
+    for i in img_set:
+        cv2.imshow("q2",i)
+        cv2.waitKey(0)
+    pool=ThreadPool()
+    t=time.time()
+    import csv
+    t_list=[0 for i in range(1000)]
+    for i in range(1000):
+        # res = pool.map(findRGB, img_set)
+        findRGB(img_set[0])
+        findRGB(img_set[1])
+        findRGB(img_set[2])
+        findRGB(img_set[3])
+        t_list[i]=time.time()-t
+        t=time.time()
+    print("========================")
+    with open('output4.csv', 'w') as csvfile:
+        writer = csv.writer(csvfile)
+        for i in range(1000):
+            writer.writerow([t_list[i]])

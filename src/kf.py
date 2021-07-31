@@ -11,6 +11,7 @@ import kf_lib
 def cb_box(data):
     global measure_x_p,measure_y_p,measure_z_p
     ang=12*np.pi/180
+    ang=0
     if abs(data.linear.z)>5 or abs(data.linear.y)>15 or abs(data.linear.x)>5 :
         return
     box_x=data.linear.x*np.cos(ang) - data.linear.z*np.sin(ang)

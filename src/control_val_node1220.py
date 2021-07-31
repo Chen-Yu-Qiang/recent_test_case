@@ -16,7 +16,8 @@ box_newTime=time.time()
 is_takeoff=1
 def cb_box(data):
     global box_lock,box_x,box_y,box_z
-    ang=12*np.pi/180
+    # ang=12*np.pi/180
+    ang=0
     box_lock.acquire()
     box_x=data.linear.x*np.cos(ang) - data.linear.z*np.sin(ang)
     box_y=data.linear.y

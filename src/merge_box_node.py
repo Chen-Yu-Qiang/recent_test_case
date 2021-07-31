@@ -69,9 +69,13 @@ class box_data:
         z_now = ((self.y-360) * distance) / 952
         self.lock.release()
         box_pub_msg = Twist()
-        box_pub_msg.linear.x = x_now
-        box_pub_msg.linear.y = y_now
-        box_pub_msg.linear.z = z_now+0.9
+        # box_pub_msg.linear.x = x_now
+        # box_pub_msg.linear.y = y_now
+        # box_pub_msg.linear.z = z_now+0.9
+        ang=12*np.pi/180
+        box_pub_msg.linear.x=x_now*np.cos(ang) - z_now*np.sin(ang)
+        box_pub_msg.linear.y=y_now
+        box_pub_msg.linear.z=x_now*np.sin(ang) + z_now*np.cos(ang)+0.9
         return box_pub_msg
     
     def isTimeOut(self):
@@ -85,7 +89,7 @@ class board_data:
         self.r=box_data()
         self.g=box_data()
         self.b=box_data()
-        self.img_ang=float()
+        self.img_ang=np.pi/2
         self.ArucoID=_ArucoID
         self.target_filter=filter_lib.meanFilter(3)
         if self.ArucoID>=50:

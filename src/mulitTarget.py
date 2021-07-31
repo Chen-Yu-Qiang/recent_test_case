@@ -62,7 +62,7 @@ def TwoTargetPos(tar1,tar2,rel=None):
     """
     if rel is None:
         rel=Twist()
-        rel.linear.x=2
+        rel.linear.x=3
         rel.linear.y=0
         rel.linear.z=0
         rel.angular.z=0
@@ -78,73 +78,93 @@ def TwoTargetPos(tar1,tar2,rel=None):
 
     return out_msg
 
-def v_y(x,y,th,l=0.1):
+def v_y(x,y,th,l=-0.1):
     xx=x+np.cos(th+np.pi*0.5)*l
     yy=y+np.sin(th+np.pi*0.5)*l
     return [x,xx],[y,yy]
 
 
 if __name__ == '__main__':
-    # filename="/home/yuqiang/catkin_ws4/src/recent_test_case/2target.png"
-    # img = cv2.imread(filename)
-    # cv2.imshow("q",img)
-    # xyid,ip = find_aruco_mean(img)
-    # print(xyid,ip)
-    # img_set=divImg(ip,img)
-    # for i in img_set:
-    #     cv2.imshow("q2",i)
-    #     cv2.waitKey(0)
-    # filename="/home/yuqiang/catkin_ws4/src/recent_test_case/3target.png"
-    # img = cv2.imread(filename)
-    # cv2.imshow("q",img)
-    # xyid,ip = find_aruco_mean(img)
-    # print(xyid,ip)
-    # img_set=divImg(ip,img)
-    # for i in img_set:
-    #     cv2.imshow("q2",i)
-    #     cv2.waitKey(0)
-    # filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
-    # img = cv2.imread(filename)
-    # cv2.imshow("q",img)
-    # xyid,ip = find_aruco_mean(img)
-    # print(xyid,ip)
-    # img_set=divImg(ip,img)
-    # for i in img_set:
-    #     cv2.imshow("q2",i)
-    #     cv2.waitKey(0)
-    import random
-    target1=Twist()
-    target1.linear.x=(random.random()-0.5)*3
-    target1.linear.y=(random.random()-0.5)*3
-    target1.linear.z=0.4
-    target1.angular.z=np.pi*2*random.random()
-    target2=Twist()
-    target2.linear.x=(random.random()-0.5)*3
-    target2.linear.y=(random.random()-0.5)*3
-    target2.linear.z=0.4
-    target2.angular.z=np.pi*2*random.random()
-    rel=Twist()
-    rel.linear.x=2
-    rel.linear.y=0
-    rel.linear.z=0
-    rel.angular.z=0
-    res=TwoTargetPos(target1,target2,rel)
-    print(res)
-    import matplotlib.pyplot as plt
-    plt.scatter(target1.linear.x,target1.linear.y)
-    [x,xx],[y,yy]=v_y(target1.linear.x,target1.linear.y,target1.angular.z)
-    plt.plot([x,xx],[y,yy])
-    plt.scatter(target2.linear.x,target2.linear.y)
-    [x,xx],[y,yy]=v_y(target2.linear.x,target2.linear.y,target2.angular.z)
-    plt.plot([x,xx],[y,yy])
-    plt.scatter((target2.linear.x+target1.linear.x)*0.5,(target2.linear.y+target1.linear.y)*0.5)
-    plt.plot([target1.linear.x,target2.linear.x],[target1.linear.y,target2.linear.y])
-    plt.scatter(res.linear.x,res.linear.y)
-    [x,xx],[y,yy]=v_y(res.linear.x,res.linear.y,res.angular.z,2)
-    plt.plot([x,xx],[y,yy])    
-    plt.axis([-3,3,-3,3])
-    plt.grid(True)
-    plt.show()
+    filename="/home/yuqiang/catkin_ws4/src/recent_test_case/2target.png"
+    img = cv2.imread(filename)
+    cv2.imshow("q",img)
+    xyid,ip = find_aruco_mean(img)
+    print(xyid,ip)
+    img_set=divImg(ip,img)
+    for i in img_set:
+        cv2.imshow("q2",i)
+        cv2.waitKey(0)
+    filename="/home/yuqiang/catkin_ws4/src/recent_test_case/3target.png"
+    img = cv2.imread(filename)
+    cv2.imshow("q",img)
+    xyid,ip = find_aruco_mean(img)
+    print(xyid,ip)
+    img_set=divImg(ip,img)
+    for i in img_set:
+        cv2.imshow("q2",i)
+        cv2.waitKey(0)
+    filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
+    img = cv2.imread(filename)
+    cv2.imshow("q",img)
+    xyid,ip = find_aruco_mean(img)
+    print(xyid,ip)
+    img_set=divImg(ip,img)
+    for i in img_set:
+        cv2.imshow("q2",i)
+        cv2.waitKey(0)
+
+
+
+    # import random
+    # target1=Twist()
+    # target1.linear.x=(random.random()-0.5)*3
+    # target1.linear.y=(random.random()-0.5)*3
+    # target1.linear.z=0.4
+    # target1.angular.z=np.pi*2*random.random()
+    # target2=Twist()
+    # target2.linear.x=(random.random()-0.5)*3
+    # target2.linear.y=(random.random()-0.5)*3
+    # target2.linear.z=0.4
+    # target2.angular.z=np.pi*2*random.random()
+
+
+
+
+    # target1=Twist()
+    # target1.linear.x=0
+    # target1.linear.y=0
+    # target1.linear.z=0
+    # target1.angular.z=np.pi*0.5
+    # target2=Twist()
+    # target2.linear.x=-1
+    # target2.linear.y=1
+    # target2.linear.z=0
+    # target2.angular.z=np.pi*0.5
+    
+    
+    # rel=Twist()
+    # rel.linear.x=2
+    # rel.linear.y=0
+    # rel.linear.z=0
+    # rel.angular.z=0
+    # res=TwoTargetPos(target1,target2,rel)
+    # print(res)
+    # import matplotlib.pyplot as plt
+    # plt.scatter(target1.linear.x,target1.linear.y)
+    # [x,xx],[y,yy]=v_y(target1.linear.x,target1.linear.y,target1.angular.z)
+    # plt.plot([x,xx],[y,yy])
+    # plt.scatter(target2.linear.x,target2.linear.y)
+    # [x,xx],[y,yy]=v_y(target2.linear.x,target2.linear.y,target2.angular.z)
+    # plt.plot([x,xx],[y,yy])
+    # # plt.scatter((target2.linear.x+target1.linear.x)*0.5,(target2.linear.y+target1.linear.y)*0.5)
+    # # plt.plot([target1.linear.x,target2.linear.x],[target1.linear.y,target2.linear.y])
+    # plt.scatter(res.linear.x,res.linear.y)
+    # [x,xx],[y,yy]=v_y(res.linear.x,res.linear.y,res.angular.z,0.3)
+    # plt.plot([x,xx],[y,yy])    
+    # # plt.axis([-3,3,-3,3])
+    # plt.grid(True)
+
+    # plt.show()
 
 
  

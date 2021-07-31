@@ -63,15 +63,15 @@ m=0
 times=0
 while  not rospy.is_shutdown():
     if is_takeoff:
-        print(t)
+        # print(t)
         if m==0:
-            if t>=30:
-                m=3
+            if t>=20:
+                m=1
                 t=float(0)
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
+                ref_pub_msg.linear.x = 1.5
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 1.5
                 ref_pub_msg.angular.z = 90.0/57.296
@@ -83,36 +83,46 @@ while  not rospy.is_shutdown():
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                ref_pub_msg.linear.x = 2.5
+                ref_pub_msg.linear.x = 2
                 ref_pub_msg.linear.y = 0
                 ref_pub_msg.linear.z = 1.5
-                ref_pub_msg.angular.z = (90.0+(90.0/20.0*t))/57.296
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==2:
-            if t>=5:
+            if t>=20:
                 m=3
                 t=float(0)
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                want_position=Target_position
-                ref_pub_msg.linear.x = (want_position.linear.x-2.5)/5*t+2.5
-                ref_pub_msg.linear.y = (want_position.linear.y-0)/5*t+0.0
-                ref_pub_msg.linear.z = (want_position.linear.z-1.5)/5*t+1.5
-                ref_pub_msg.angular.z = 180.0/57.296
+                ref_pub_msg.linear.x = 2.5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==3:
-            if t>=60:
+            if t>=20:
+                m=4
+                t=float(0)
+            else:
+                t=t+Ts
+                ref_pub_msg=Twist()
+                ref_pub_msg.linear.x = 3
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
+                ref_pub.publish(ref_pub_msg)
+        if m==4:
+            if t>=20:
                 m=100
                 t=float(0)
             else:
                 t=t+Ts
                 ref_pub_msg=Twist()
-                want_position=Target_position
-                ref_pub_msg.linear.x = want_position.linear.x
-                ref_pub_msg.linear.y = want_position.linear.y
-                ref_pub_msg.linear.z = want_position.linear.z
-                ref_pub_msg.angular.z = want_position.angular.z
+                ref_pub_msg.linear.x = 3.5
+                ref_pub_msg.linear.y = 0
+                ref_pub_msg.linear.z = 1.5
+                ref_pub_msg.angular.z = 90.0/57.296
                 ref_pub.publish(ref_pub_msg)
         if m==100:
             land_pub.publish(Empty())

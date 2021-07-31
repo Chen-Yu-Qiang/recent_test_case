@@ -4,6 +4,8 @@ import os
 import numpy as np
 import time
 import threading
+import multiprocessing as mp
+from multiprocessing.dummy import Pool as ThreadPool
 import rospy
 import findBoxWCanny
 from sensor_msgs.msg import Image
@@ -54,6 +56,10 @@ class image_converter:
         self.bgimg = cv2.imread("bg.png")
         self.isdoing=0
         self.ttt=time.time()
+        self.pool=ThreadPool()
+        # self.pool=mp.Pool()
+    def findRGB_mp(self,i):
+        return findBoxWCanny.findRGB(i)
     def callback(self,data):
         if time.time()-self.ttt<0.01:
             return
@@ -64,15 +70,33 @@ class image_converter:
             cv_image = self.bridge.imgmsg_to_cv2(data, "bgr8")
             xyid,ip = mulitTarget.find_aruco_mean(cv_image)
             if xyid==-1 and ip==-1:
-                self.MAIN(cv_image,-1,cv_image)
+                self.MAIN(cv_image,-1,cv_image.copy(),None,None,None,None)
                 return
+
             img_set = mulitTarget.divImg(ip,cv_image)
             for i in range(len(xyid)):
-                self.MAIN(img_set[i],xyid[i][2],cv_image.copy())
+                cv2.imshow(str(xyid[i][2]),img_set[i])
+            #    img_set[i]=cv2.cvtColor(img_set[i], cv2.COLOR_BGR2HSV) 
+
+
+            res = self.pool.map(findBoxWCanny.findRGB, img_set)
+
+            for i in range(len(xyid)):
+                
+                r=None
+                g=None
+                b=None
+                ang=None
+                r,g,b,ang=res[i]
+                
+                # r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
+                # print(r,g,b,ang)
+                self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+            # print(time.time()-ttt)
+            # print("-------------")
         except CvBridgeError as e:
             print(e)
-    def MAIN(self,cv_image,aruco_id,cv_image_org):
-        r,g,b,ang=findBoxWCanny.findRGB(cv_image)
+    def MAIN(self,cv_image,aruco_id,cv_image_org,r,g,b,ang):
         cv_image=cv_image_org
         if not ang is None:
             if ang<2.618 and ang>0.524:
