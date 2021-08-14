@@ -74,8 +74,8 @@ class image_converter:
                 return
 
             img_set = mulitTarget.divImg(ip,cv_image)
-            for i in range(len(xyid)):
-                cv2.imshow(str(xyid[i][2]),img_set[i])
+            # for i in range(len(xyid)):
+                # cv2.imshow(str(xyid[i][2]),img_set[i])
             #    img_set[i]=cv2.cvtColor(img_set[i], cv2.COLOR_BGR2HSV) 
 
 

@@ -149,9 +149,9 @@ while  not rospy.is_shutdown():
         err_ang_int = err_ang_int + err_ang * d_t
         err_ang_last = err_ang
         
-        kp = 1.1
-        ki = 0.1
-        kd = 0.8
+        kp = 1.5
+        ki = 0.3
+        kd = 1.8
 
         #if abs(err_x)>0.7:
         #    kp = 10000

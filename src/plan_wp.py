@@ -18,7 +18,7 @@ class target:
         self.after_filter_pub.publish(self.data)
         self.t=time.time()
     def isTimeout(self):
-        if (time.time()-self.t<5) and (not (self.data is None)):
+        if (time.time()-self.t<50) and (not (self.data is None)):
             return 0
         else:
             return 1
