@@ -8,8 +8,8 @@ ALPHA_H=0.6119
 ALPHA_V=0.4845
 Z_T=1.5
 Z_B=4.5
-THETA_A=np.pi/3
-RHO=0.01
+THETA_A=np.pi/4
+RHO=1
 
 
 taskPoint=[[0.0,0.0,0.0,0.0] for i in range(TASKPOINT_NUM)]
@@ -51,7 +51,7 @@ def d_v(pk,ci):
     return max(abs(tpk[0]),abs(tpk[1]),abs(tpk[2]),abs(tpk[3]))
 
 def C_s(pk,ci):
-    return np.exp((-1.0)*RHO*d_v(pk,ci))
+    return np.exp((-1.0)*RHO*d_v(pk,ci)*d_v(pk,ci))
 
 def whatPartition(pk,ci):
     cpk=worldFrame2CameraFrame(pk,ci)
@@ -73,7 +73,7 @@ def whatPartition(pk,ci):
 
 def Partial_C_s_Partial_ci(pk,ci,partition):
     _Partial_C_s_Partial_ci=[0.0,0.0,0.0,0.0]
-    partial_C_s_partial_dv=(-1.0)*RHO*np.exp((-1.0)*RHO*d_v(pk,ci))
+    partial_C_s_partial_dv=(-2.0)*d_v(pk,ci)*RHO*np.exp((-1.0)*RHO*d_v(pk,ci)*d_v(pk,ci))
     cpk=worldFrame2CameraFrame(pk,ci)
     if partition==7:
         if cpk[3]<0:
@@ -164,11 +164,11 @@ def v_y(x,y,th,l=-0.1):
 
 if __name__ == '__main__':
     taskPoint[0]=[0.0,0.0,0.0,np.pi/2]
-    taskPoint[1]=[0.0,1.0,0.0,np.pi/2]
-    ci=[1.0,1.0,0.0,np.pi/2]
-    it_length=0.01
+    taskPoint[1]=[0.0,0.5,0.0,np.pi/2]
+    ci=[1.0,1.0,0.0,np.pi]
+    it_length=1
 
-    for i in range(100):
+    for i in range(10000):
         delta_ci=mut_point(ci,taskPoint)
         # print(delta_ci)
         ci[0]=ci[0]+it_length*delta_ci[0]
@@ -176,7 +176,8 @@ if __name__ == '__main__':
         ci[2]=ci[2]+it_length*delta_ci[2]
         ci[3]=ci[3]+it_length*0.1*delta_ci[3]
         length=delta_ci[0]*delta_ci[0]+delta_ci[1]*delta_ci[1]+delta_ci[2]*delta_ci[2]+delta_ci[3]*delta_ci[3]*0.01
-        # print(ci,length)
+        it_length=it_length*0.999
+        print("ci",ci,i)
     
     cpk=worldFrame2CameraFrame(taskPoint[0],ci)
     tpk=ciSpace2tiSpace(cpk)
@@ -223,14 +224,16 @@ if __name__ == '__main__':
 
     plt.show()
 
-    x_list=np.linspace(3,3,1)
-    y_list=np.linspace(-1,2,301)
+    x_list=np.linspace(1,5,41)
+    y_list=np.linspace(-1,2,31)
+    th_list=np.linspace(0,np.pi,37)
     the_MAX=0
     for i in range(len(x_list)):
         for j in range(len(y_list)):
-            ci=[x_list[i],y_list[j],0,np.pi/2]
-            pk1=taskPoint[0]
-            pk2=taskPoint[1]
-            if C_s(pk1,ci)+C_s(pk2,ci)>the_MAX:
-                the_MAX=C_s(pk1,ci)+C_s(pk2,ci)
-            print(x_list[i],y_list[j],C_s(pk1,ci)+C_s(pk2,ci))
+            for k in range(len(th_list)):
+                ci=[x_list[i],y_list[j],0,th_list[k]]
+                pk1=taskPoint[0]
+                pk2=taskPoint[1]
+                if C_s(pk1,ci)+C_s(pk2,ci)>the_MAX:
+                    the_MAX=C_s(pk1,ci)+C_s(pk2,ci)
+                    print(x_list[i],y_list[j],th_list[k],C_s(pk1,ci)+C_s(pk2,ci))
