@@ -109,6 +109,7 @@ class board_data:
     def for_target(self):
         box_pub_r_msg_target=self.TwistAddArucoID(self.r.getXYZ(184))
         box_pub_r_msg_target=self.target_filter.update(box_pub_r_msg_target)
+        box_pub_r_msg_target.linear.z=box_pub_r_msg_target.linear.z-0.9
         box_pub_g_msg_target=self.TwistAddArucoID(self.g.getXYZ(184))
         box_pub_b_msg_target=self.TwistAddArucoID(self.b.getXYZ(184))
         box_pub_r_target.publish(Rz(box_pub_r_msg_target))

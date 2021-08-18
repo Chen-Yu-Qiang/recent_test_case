@@ -35,7 +35,7 @@ Target_all_position=Twist()
 def cb_target_all(data):
     global Target_all_position
     Target_all_position=data
-    Target_all_position.linear.z=Target_all_position.linear.z+1.5
+    Target_all_position.linear.z=Target_all_position.linear.z
 
 def cheak_ang_range(i):
     if i>np.pi/2*3:
@@ -52,7 +52,7 @@ def wantPos(Target_position,dis):
     want_position=Twist()
     want_position.linear.x = Target_position.linear.x+np.sin(Target_position.angular.z)*dis
     want_position.linear.y = Target_position.linear.y-np.cos(Target_position.angular.z)*dis
-    want_position.linear.z = Target_position.linear.z+1.5
+    want_position.linear.z = Target_position.linear.z
     want_position.angular.z = Target_position.angular.z
     return want_position
 

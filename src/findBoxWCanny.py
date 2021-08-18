@@ -295,6 +295,33 @@ def div1234(pp):
 
     return [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]
 
+def div1234_plotPoly(pp):
+    if pp is None:
+        return None
+    p=[[[0,0,0]],[[0,0,0]],[[0,0,0]],[[0,0,0]]]
+    # print(pp)
+    for i in range(4):
+        p[i][0]=[pp[i][0][0],pp[i][0][1],0]
+
+    p.sort(key=(lambda x:x[0][0]))
+    p[2][0][2]=1
+    p[3][0][2]=1
+    p.sort(key=(lambda x:x[0][1]))
+    p[2][0][2]=p[2][0][2]+2
+    p[3][0][2]=p[3][0][2]+2
+    p.sort(key=(lambda x:x[0][2]))
+    x3=p[1][0][0]
+    x4=p[2][0][0]
+    x2=p[3][0][0]
+    y1=p[0][0][1]
+    y3=p[1][0][1]
+    x1=p[0][0][0]
+    y4=p[2][0][1]
+    y2=p[3][0][1]
+
+    return np.array([[[x1,y1]],[[x3,y3]],[[x2,y2]],[[x4,y4]]])
+
+
 def xywh(p):
     [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=p
     x=(x1*x3*y2 - x2*x3*y1 - x1*x4*y2 + x2*x4*y1 - x1*x3*y4 + x1*x4*y3 + x2*x3*y4 - x2*x4*y3)/(x1*y3 - x3*y1 - x1*y4 - x2*y3 + x3*y2 + x4*y1 + x2*y4 - x4*y2)
@@ -519,6 +546,10 @@ def findRGB(img):
         img=cv2.circle(img, (x,y), 2, 255)
         if x<100 or x>860:
             eee=1
+        if not isConvex(r):
+            eee=1
+            r=None
+            print("r ======================")
         # print("r",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not g is None:
@@ -527,6 +558,10 @@ def findRGB(img):
         img=cv2.circle(img, (x,y), 2, 255)
         if x<100 or x>860:
             eee=1
+        if not isConvex(r):
+            eee=1
+            g=None
+            print("g ======================")
         # print("g",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not b is None:
@@ -534,10 +569,15 @@ def findRGB(img):
         x,y,w,h,a= xywh(div1234_point)
         img=cv2.circle(img, (x,y), 2, 255)
         if x<100 or x>860:
-            eee=1
+            pass
+        if not isConvex(b):
+            b=None
+            print("b ======================")
+
         # print("b",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
-    cv2.polylines(img, [r,g,b], True, ( 0,255, 0), 1)
+
+    cv2.polylines(img, [div1234_plotPoly(r),div1234_plotPoly(g),div1234_plotPoly(b)], True, ( 0,255, 0), 1)
     # print(time.time()-t)
     # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
     # cv2.imshow("a",hsv)
@@ -545,89 +585,17 @@ def findRGB(img):
     if (not r is None )and (not g is None) and eee==0:
         # p1234To3D(img)
         _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r),div1234(g))
-        # print(infp_xh,infp_yh,m1,c1,m2,c2)
-        img=cv2.line(img,(0,int(c1)),(960,int(960*m1+c1)),(255, 0, 0), 1)
-        img=cv2.line(img,(0,int(c2)),(960,int(960*m2+c2)),(255, 0, 0), 1)
-        ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
-        # print("h1",ang)
+        if twoLineAngH_error(div1234(r),div1234(g)) <10:
+            # print(infp_xh,infp_yh,m1,c1,m2,c2)
+            img=cv2.line(img,(0,int(c1)),(960,int(960*m1+c1)),(255, 0, 0), 1)
+            img=cv2.line(img,(0,int(c2)),(960,int(960*m2+c2)),(255, 0, 0), 1)
+            ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
+            # print("h1",ang)
+        else:
+            print("LS error too big")
     # cv2.imshow("a",img)
-    # cv2.waitKey(0)
+    # cv2.waitKey(1)
 
-    return r,g,b,ang
-
-# pool=mp.Pool(4)
-def findRGB_mp(img):
-    img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
-    r_mp=None
-    g_mp=None
-    b_mp=None
-    t=time.time()
-    res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
-    print(time.time()-t)
-    r_mp=res[0]
-    g_mp=res[1]
-    b_mp=res[2]
-    eee=0
-    if not r_mp is None:
-        div1234_point=div1234(r_mp)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    if not g_mp is None:
-        div1234_point=div1234(g_mp)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    if not b_mp is None:
-        div1234_point=div1234(b_mp)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    ang=None
-    if (not r_mp is None )and (not g_mp is None) and eee==0:
-        # p1234To3D(img)
-        _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r_mp),div1234(g_mp))
-        ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
-    return r_mp,g_mp,b_mp,ang
-
-def findRGB_mp_gl(img):
-    global r,g,b
-    img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
-
-    t=time.time()
-    
-    r_jod=mp.Process(target = findCanny_mp, args = ((img,"r"),))
-    g_jod=mp.Process(target = findCanny_mp, args = ((img,"g"),))
-    b_jod=mp.Process(target = findCanny_mp, args = ((img,"b"),))
-    r_jod.start()
-    g_jod.start()
-    b_jod.start()
-    r_jod.join()
-    g_jod.join()
-    b_jod.join() 
-    print(time.time()-t)
-
-    eee=0
-    if not r is None:
-        div1234_point=div1234(r)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    if not g is None:
-        div1234_point=div1234(g)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    if not b is None:
-        div1234_point=div1234(b)
-        x,y,w,h,a= xywh(div1234_point)
-        if x<100 or x>860:
-            eee=1
-    ang=None
-    if (not r is None )and (not g is None) and eee==0:
-        # p1234To3D(img)
-        _,m1,c1,m2,c2,infp_xh,infp_yh=twoLineAngH(div1234(r),div1234(g))
-        ang=vp2ang((infp_xh,infp_yh),(infp_xh,infp_yh))
     return r,g,b,ang
 
 
@@ -673,9 +641,29 @@ def twoLineAngH(pr,pg):
     delta=np.arctan(a)-np.arctan(c)
     x=-(b - d)/(a - c)
     y=(a*d - c*b)/(a - c)
-
+    # a b : line1 y=ax+b
+    # c d : line2 y=cx+d
+    # x,y : Vanishing point
+    # delta : angle between 2 line
     return delta,a,b,c,d,x,y
 
+def twoLineAngH_error(pr,pg):
+    # (x1,y1)  (x3,y3)
+    # (x4,y4)  (x2,y2)
+    [[x11,y11],[x12,y12],[x13,y13],[x14,y14]]=pr
+    [[x21,y21],[x22,y22],[x23,y23],[x24,y24]]=pg
+
+
+    A=np.array([[x13,1],[x11,1],[x23,1],[x21,1]])
+    y=np.array([y13,y11,y23,y21])
+    e1=np.linalg.lstsq(A, y, rcond=None)[1]
+
+
+    A=np.array([[x12,1],[x14,1],[x22,1],[x24,1]])
+    y=np.array([y12,y14,y22,y24])
+    e2=np.linalg.lstsq(A, y, rcond=None)[1]
+
+    return max(e1,e2)
 
 def twoLineAngH2(pr,pg):
     # (x1,y1)  (x3,y3)
@@ -704,8 +692,30 @@ def twoLineAngV(pg,pb):
     return delta,a,b,c,d,x,y
 
 
+def isConvex(p):
+    if p is None:
+        return 0
+    def ang123(x11,y11,x22,y22,x33,y33):
+        v1x=x11-x22
+        v1y=y11-y22
+        v2x=x33-x22
+        v2y=y33-y22
+        l1=np.sqrt(v1x*v1x+v1y*v1y)
+        l2=np.sqrt(v2x*v2x+v2y*v2y)
+        innPro=v1x*v2x+v1y+v2y
+        ang=np.arccos(1.0*innPro/(l1*l2))
+        return ang
 
-
+    [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=div1234(p)
+    ang1=ang123(x4,y4,x1,y1,x3,y3)
+    ang2=ang123(x1,y1,x3,y3,x2,y2)
+    ang3=ang123(x3,y3,x2,y2,x4,y4)
+    ang4=ang123(x2,y2,x4,y4,x1,y1)
+    totang=ang1+ang2+ang3+ang4
+    if abs(totang-2*np.pi)>0.3:
+        return 0
+    else:
+        return 1
 
 
 def test_0318_t1():

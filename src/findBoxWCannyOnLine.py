@@ -58,8 +58,7 @@ class image_converter:
         self.ttt=time.time()
         self.pool=ThreadPool()
         # self.pool=mp.Pool()
-    def findRGB_mp(self,i):
-        return findBoxWCanny.findRGB(i)
+
     def callback(self,data):
         if time.time()-self.ttt<0.01:
             return
@@ -78,20 +77,28 @@ class image_converter:
                 # cv2.imshow(str(xyid[i][2]),img_set[i])
             #    img_set[i]=cv2.cvtColor(img_set[i], cv2.COLOR_BGR2HSV) 
 
-
+            # multi==================================================
             res = self.pool.map(findBoxWCanny.findRGB, img_set)
-
             for i in range(len(xyid)):
-                
                 r=None
                 g=None
                 b=None
                 ang=None
                 r,g,b,ang=res[i]
-                
-                # r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
                 # print(r,g,b,ang)
                 self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+            # single===================================================
+            # for i in range(len(xyid)):
+            #     r=None
+            #     g=None
+            #     b=None
+            #     ang=None                
+            #     r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
+            #     # print(r,g,b,ang)
+            #     self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+
+
+            #============================================================
             # print(time.time()-ttt)
             # print("-------------")
         except CvBridgeError as e:
@@ -105,7 +112,7 @@ class image_converter:
                 pp.linear.z=aruco_id
                 pp.angular.z=ang
                 pub_ang_n.publish(pp)
-        if not r is None:
+        if not r is None and not ang is None:
             # print(r)
             x, y, w, h, a =findBoxWCanny.xywh(findBoxWCanny.div1234(r))
             if not x*y*w*h==0:
@@ -125,7 +132,7 @@ class image_converter:
                 cv_image=cv2.rectangle(cv_image, (int(x-0.5*w),int(y-0.5*h)), (int(x+0.5*w),int(y+0.5*h)), (0,0,255), 5) 
                 cv_image = cv2.putText(cv_image,str(aruco_id),(x,y),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
             
-        if not g is None:
+        if not g is None and not ang is None:
             x, y, w, h , a= findBoxWCanny.xywh(findBoxWCanny.div1234(g))
             if not x*y*w*h==0:
                 p=Point()
