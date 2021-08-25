@@ -2,17 +2,15 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+from geometry_msgs.msg import Twist
 
-TASKPOINT_NUM=2
 ALPHA_H=0.6119
 ALPHA_V=0.4845
 Z_T=1.5
 Z_B=4.5
-THETA_A=np.pi/4
+THETA_A=np.pi/3
 RHO=1
 
-
-taskPoint=[[0.0,0.0,0.0,0.0] for i in range(TASKPOINT_NUM)]
 
 def cameraFrame2WorldFrame(cpk,ci):
     theta=ci[3]
@@ -152,12 +150,83 @@ def mut_point(ci,taskPoint):
         partition=whatPartition(taskPoint[i],ci)
         # print(str(i),partition)
         delta=Partial_C_s_Partial_ci(taskPoint[i],ci,partition)
+
         all_delta_ci[0]=delta[0]+all_delta_ci[0]
         all_delta_ci[1]=delta[1]+all_delta_ci[1]
         all_delta_ci[2]=delta[2]+all_delta_ci[2]
         all_delta_ci[3]=delta[3]+all_delta_ci[3]
-        # print(str(i),delta)
+        # print(str(i),delta,partition)
     return all_delta_ci
+
+def isCovered(ci,pk_list):
+    for i in range(len(pk_list)):
+        if d_v(pk_list(i),ci)>1:
+            return 0
+    return 1
+
+def VVP(ci_list,pk_list):
+    ci_pk_dis=[[0 for k in range(len(pk_list))] for i in range(len(ci_list))]
+    for i in range(len(ci_pk_dis)):
+        for k in range(len(ci_pk_dis[i])):
+            ci_pk_dis[i][k]=d_v(pk_list[k],ci_list[i])
+
+    Vi=[[] for i in range(len(ci_list))]
+
+    for k in range(len(pk_list)):
+        min_i=100
+        min_dis=10000
+        for i in range(len(ci_list)):
+            if ci_pk_dis[i][k]<min_dis:
+                min_i=i
+                min_dis=ci_pk_dis[i][k]
+        Vi[min_i].append(pk_list[k])
+    return Vi
+                
+def twist2taskpoint(twist_list):
+    taskPoint=[[0.0,0.0,0.0,0.0] for i in range(len(twist_list))]
+    for i in range(len(twist_list)):
+        a=twist_list[i]
+        taskPoint[i][0]=a.linear.x
+        taskPoint[i][1]=a.linear.y
+        taskPoint[i][2]=a.linear.z
+        taskPoint[i][3]=a.angular.z
+
+    return taskPoint
+
+def twist2ci(twist):
+    return [twist_list.linear.x,twist_list.linear.y,twist_list.linear.z,twist_list.angular.z]
+
+def ci2twist(ci):
+    a=Twist()
+    a.linear.x=ci[0]
+    a.linear.y=ci[1]
+    a.linear.z=ci[2]
+    a.angular.z=ci[3]
+
+    return a
+
+class viewPanner:
+    def __init__(self):
+        self.taskPoint=[]
+        self.ci=[0,0,0,np.pi]
+        self.it_length=1
+    def set_taskPoint(self,_taskPoint):
+        self.taskPoint=_taskPoint
+    def one_it(self):
+        delta_ci=mut_point(self.ci,self.taskPoint)
+
+        self.ci[0]=self.ci[0]+self.it_length*delta_ci[0]
+        self.ci[1]=self.ci[1]+self.it_length*delta_ci[1]
+        self.ci[2]=self.ci[2]+self.it_length*delta_ci[2]
+        self.ci[3]=self.ci[3]+self.it_length*0.1*delta_ci[3]
+        return self.ci
+    def gant(self,times=10,dec=0.9):
+        self.it_length=1
+        for i in range(times):
+            self.one_it()
+            self.it_length=self.it_length*dec
+
+        return self.ci
 
 
 def v_y(x,y,th,l=-0.5):
@@ -180,6 +249,8 @@ if __name__ == '__main__':
     taskPoint[0]=[0.0,0.65,0.0,np.pi/2]
     taskPoint[1]=[0.0,-0.8,0.0,np.pi*0.5]
 
+    ci=[[3.0,-0.65,0.0,np.pi/2],[3,0.8,0.0,np.pi/2]]
+    print(VVP(ci,taskPoint))
     # Case 2
     # taskPoint[0]=[0.0,0.65,0.0,np.pi/2]
     # taskPoint[1]=[0.0,-0.8,0.0,np.pi*2.0/3]
@@ -221,22 +292,22 @@ if __name__ == '__main__':
     #     plt.plot([x,xx],[y,yy],color=board_color[i])
 
 
-    for i in range(1000):
-        delta_ci=mut_point(ci,taskPoint)
-        # print(delta_ci)
-        ci[0]=ci[0]+it_length*delta_ci[0]
-        ci[1]=ci[1]+it_length*delta_ci[1]
-        ci[2]=ci[2]+it_length*delta_ci[2]
-        ci[3]=ci[3]+it_length*0.1*delta_ci[3]
-        it_length=it_length*0.999
-        res=Twist()
-        res.linear.x=ci[0]
-        res.linear.y=ci[1]
-        res.linear.z=ci[2]
-        res.angular.z=ci[3]
-        t1_per[i]=C_s(taskPoint[0],ci)
-        # t2_per[i]=C_s(taskPoint[1],ci)
-        overall_per[i]=t1_per[i]+t2_per[i]
+    # for i in range(1000):
+    #     delta_ci=mut_point(ci,taskPoint)
+    #     # print(delta_ci)
+    #     ci[0]=ci[0]+it_length*delta_ci[0]
+    #     ci[1]=ci[1]+it_length*delta_ci[1]
+    #     ci[2]=ci[2]+it_length*delta_ci[2]
+    #     ci[3]=ci[3]+it_length*0.1*delta_ci[3]
+    #     it_length=it_length*0.999
+    #     res=Twist()
+    #     res.linear.x=ci[0]
+    #     res.linear.y=ci[1]
+    #     res.linear.z=ci[2]
+    #     res.angular.z=ci[3]
+    #     t1_per[i]=C_s(taskPoint[0],ci)
+    #     # t2_per[i]=C_s(taskPoint[1],ci)
+    #     overall_per[i]=t1_per[i]+t2_per[i]
 
 
 
@@ -268,23 +339,23 @@ if __name__ == '__main__':
         # plt.clf()
         # =================================================================================
 
-        cpk=worldFrame2CameraFrame(taskPoint[0],ci)
-        tpk=ciSpace2tiSpace(cpk)
+        # cpk=worldFrame2CameraFrame(taskPoint[0],ci)
+        # tpk=ciSpace2tiSpace(cpk)
 
-        tck1_1[i]=tpk[0]
-        tck1_2[i]=tpk[1]
-        tck1_3[i]=tpk[2]
-        tck1_4[i]=tpk[3]
+        # tck1_1[i]=tpk[0]
+        # tck1_2[i]=tpk[1]
+        # tck1_3[i]=tpk[2]
+        # tck1_4[i]=tpk[3]
 
-        cpk=worldFrame2CameraFrame(taskPoint[1],ci)
-        tpk=ciSpace2tiSpace(cpk)
+        # cpk=worldFrame2CameraFrame(taskPoint[1],ci)
+        # tpk=ciSpace2tiSpace(cpk)
 
-        tck2_1[i]=tpk[0]
-        tck2_2[i]=tpk[1]
-        tck2_3[i]=tpk[2]
-        tck2_4[i]=tpk[3]
+        # tck2_1[i]=tpk[0]
+        # tck2_2[i]=tpk[1]
+        # tck2_3[i]=tpk[2]
+        # tck2_4[i]=tpk[3]
 
-        print("ci",ci,i)
+        # print("ci",ci,i)
 
     # plt.plot(trj_x,trj_y,color="b")
     # plt.axis([-1,5,-2,2])
@@ -293,28 +364,28 @@ if __name__ == '__main__':
     # plt.ylabel("Y (m)")
     # plt.show()
 
-    plt.plot(tck1_1)
-    plt.plot(tck1_2)
-    plt.plot(tck1_3)
-    plt.plot(tck1_4)
-    plt.grid(True)
-    plt.xlabel("Number of iterations")
-    plt.ylabel(" (m)")
-    plt.axis([0,1000,0,2])
-    plt.legend(["tp_xk","tp_yk","tp_zk","tp_thk"])
-    plt.show()
+    # plt.plot(tck1_1)
+    # plt.plot(tck1_2)
+    # plt.plot(tck1_3)
+    # plt.plot(tck1_4)
+    # plt.grid(True)
+    # plt.xlabel("Number of iterations")
+    # plt.ylabel(" (m)")
+    # plt.axis([0,1000,0,2])
+    # plt.legend(["tp_xk","tp_yk","tp_zk","tp_thk"])
+    # plt.show()
 
 
-    plt.plot(tck2_1)
-    plt.plot(tck2_2)
-    plt.plot(tck2_3)
-    plt.plot(tck2_4)
-    plt.grid(True)
-    plt.xlabel("Number of iterations")
-    plt.ylabel(" (m)")
-    plt.axis([0,1000,0,2])
-    plt.legend(["tp_xk","tp_yk","tp_zk","tp_thk"])
-    plt.show()
+    # plt.plot(tck2_1)
+    # plt.plot(tck2_2)
+    # plt.plot(tck2_3)
+    # plt.plot(tck2_4)
+    # plt.grid(True)
+    # plt.xlabel("Number of iterations")
+    # plt.ylabel(" (m)")
+    # plt.axis([0,1000,0,2])
+    # plt.legend(["tp_xk","tp_yk","tp_zk","tp_thk"])
+    # plt.show()
 
 
 

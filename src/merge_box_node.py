@@ -207,6 +207,8 @@ def cb_img_ang(data):
 
 def cb_box_r(data):
     global board_set
+    data.angular.x=data.angular.x/np.sin(board_set[int(data.linear.z)].img_ang)
+    print(data.linear.z,data.angular.x,board_set[int(data.linear.z)].img_ang*57.3)
     board_set[int(data.linear.z)].r.setFromTwistMsg(data)
 
 def cb_box_g(data):

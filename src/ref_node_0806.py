@@ -35,7 +35,7 @@ Target_all_position=Twist()
 def cb_target_all(data):
     global Target_all_position
     Target_all_position=data
-    Target_all_position.linear.z=Target_all_position.linear.z
+    Target_all_position.linear.z=Target_all_position.linear.z+0.3
 
 def cheak_ang_range(i):
     if i>np.pi/2*3:
@@ -95,7 +95,8 @@ m=0
 times=0
 while  not rospy.is_shutdown():
     if is_takeoff:
-        print(t)
+        if t%1==0:
+            print(t)
         if m==0:
             if t>=15:
                 m=1

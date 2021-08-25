@@ -153,7 +153,7 @@ def findCanny(img,color):
     if color=="b":
         b=None
 
-    bigger=0.1
+    bigger=0.2
     # cv2.imshow("org"+str(color),cv2.cvtColor(img, cv2.COLOR_BGR2HSV))
     # cv2.waitKey(1)
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
@@ -165,16 +165,16 @@ def findCanny(img,color):
         return
     mask = np.zeros((720,960,1), np.uint8) 
     mask.fill(0)
-    cv2.rectangle(mask, (int(x-w*bigger), int(y-h*bigger)), (int(x+w*(1+2*bigger)), int(y+h*(1+2*bigger))), 255, -1)
+    cv2.rectangle(mask, (int(x-w*bigger), int(y-h*bigger)), (int(x+w*(1+bigger)), int(y+h*(1+bigger))), 255, -1)
 
 
     image = cv2.bitwise_or(img, img, mask=mask)
 
     #image = cv2.cvtColor(image,cv2.COLOR_BGR2HSV)
-    y_min=max(0,int(y-h*bigger+1))
-    y_max=min(719,int(y+h*(1+2*bigger)-1))
-    x_min=max(0,int(x-w*bigger+1))
-    x_max=min(959,int(x+w*(1+2*bigger)-1))
+    y_min=max(0,int(y-1.0*h*bigger+1))
+    y_max=min(719,int(y+h*(1+bigger)-1))
+    x_min=max(0,int(x-1.0*w*bigger+1))
+    x_max=min(959,int(x+1.0*w*(1.0+bigger)-1))
     # cv2.imshow('cut'+color, image[y_min:y_max,x_min:x_max])
     # cv2.waitKey(1)   
     # print(image.shape)
@@ -530,10 +530,15 @@ def findRGB(img):
     # b_jod.join()
     # # # print("b join")
     # # # print(xywh(div1234(r))) 
+
+    # ===========================Multithreading
+
     res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
     r=res[0]
     g=res[1]
     b=res[2]
+
+
     # ==========================Single thread
     # r=findCanny(img,"r")
     # g=findCanny(img,"g")

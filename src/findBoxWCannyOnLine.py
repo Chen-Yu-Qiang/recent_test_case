@@ -62,7 +62,6 @@ class image_converter:
     def callback(self,data):
         if time.time()-self.ttt<0.01:
             return
-        
         try:
             self.isdoing=1
             ttt=time.time()
