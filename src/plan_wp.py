@@ -115,6 +115,6 @@ while not rospy.is_shutdown():
         # res=mulitTarget.TwoTargetPos(target_set[0].data,target_set[1].data)
         taskPoint=viewPanning.twist2taskpoint([target_set[0].data,target_set[1].data])
         vper.set_taskPoint(taskPoint)
-        res=viewPanning.ci2twist(vper.gant())
+        res=viewPanning.ci2twist(vper.gant(times=50))
         plan_wp_pub.publish(res)
     rate.sleep()

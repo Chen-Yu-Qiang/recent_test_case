@@ -25,17 +25,19 @@ Target51_position=Twist()
 def cb_target51(data):
     global Target51_position
     Target51_position=data
+    Target51_position.linear.z=Target51_position.linear.z+0.5
 
 Target52_position=Twist()
 def cb_target52(data):
     global Target52_position
     Target52_position=data
+    Target52_position.linear.z=Target52_position.linear.z+0.5
 
 Target_all_position=Twist()
 def cb_target_all(data):
     global Target_all_position
     Target_all_position=data
-    Target_all_position.linear.z=Target_all_position.linear.z+0.3
+    Target_all_position.linear.z=Target_all_position.linear.z+0.5
 
 def cheak_ang_range(i):
     if i>np.pi/2*3:
@@ -84,8 +86,8 @@ takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_pub = rospy.Publisher('ref', Twist, queue_size=1)
 land_pub = rospy.Publisher('tello/land', Empty, queue_size=1)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
-target51_sub = rospy.Subscriber('target51', Twist, cb_target51)
-target52_sub = rospy.Subscriber('target52', Twist, cb_target52)
+target51_sub = rospy.Subscriber('target51_f', Twist, cb_target51)
+target52_sub = rospy.Subscriber('target52_f', Twist, cb_target52)
 target_all_sub = rospy.Subscriber('plan_wp', Twist, cb_target_all)
 Ts=0.01
 rate = rospy.Rate(1/Ts)
@@ -205,7 +207,7 @@ while  not rospy.is_shutdown():
                 ref_pub_msg=p2p_mean(wantPos(Target52_position,2),Target_all_position,5,t)
                 ref_pub.publish(ref_pub_msg)
         if m==10:
-            if t>=15:
+            if t>=30:
                 m=100
                 t=float(0)
             else:

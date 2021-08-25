@@ -183,8 +183,8 @@ def findCanny(img,color):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     # cv2.imshow('blurred', blurred)
     canny=blurred[y_min:y_max,x_min:x_max]
-    # cv2.imshow('canny1'+color, canny)
-    # cv2.waitKey(1)
+    cv2.imshow('canny1'+color, canny)
+    cv2.waitKey(1)
     # print("G",canny.shape)
     # cv2.imshow('canny'+color, canny)
     # cv2.waitKey(0)
@@ -533,16 +533,16 @@ def findRGB(img):
 
     # ===========================Multithreading
 
-    res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
-    r=res[0]
-    g=res[1]
-    b=res[2]
+    # res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
+    # r=res[0]
+    # g=res[1]
+    # b=res[2]
 
 
     # ==========================Single thread
-    # r=findCanny(img,"r")
-    # g=findCanny(img,"g")
-    # b=findCanny(img,"b")
+    r=findCanny(img,"r")
+    g=findCanny(img,"g")
+    b=findCanny(img,"b")
 
     eee=0
     if not r is None:

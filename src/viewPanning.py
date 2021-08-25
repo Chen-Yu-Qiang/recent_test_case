@@ -8,7 +8,7 @@ ALPHA_H=0.6119
 ALPHA_V=0.4845
 Z_T=1.5
 Z_B=4.5
-THETA_A=np.pi/3
+THETA_A=np.pi/4
 RHO=1
 
 
@@ -212,6 +212,14 @@ class viewPanner:
         self.it_length=1
     def set_taskPoint(self,_taskPoint):
         self.taskPoint=_taskPoint
+    
+    def isTooBig(self):
+        d_all=0
+        for i in range(len(self.taskPoint)):
+            d_all=d_all+d_v(self.taskPoint[i],self.ci)
+        if d_all>1.2:
+            return 1
+        return 0
     def one_it(self):
         delta_ci=mut_point(self.ci,self.taskPoint)
 

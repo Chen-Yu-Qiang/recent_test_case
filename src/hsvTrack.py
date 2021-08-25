@@ -11,7 +11,7 @@ def nothing(a):
     global aaa
     aaa=1
 
-img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-25 14-43-32.png")
+img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-25 18-23-49.png")
 
 # convert to HSV
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
@@ -49,10 +49,22 @@ hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 
 
+# b
+# lower = np.array([80, 80, 8])
+# upper = np.array([119, 252, 182])
+# g
+# lower = np.array([67, 70, 30])
+# upper = np.array([78, 253, 160])
+# mask = cv2.inRange(hsv, lower, upper)
+lower = np.array([174, 60, 35])
+upper = np.array([179, 255, 164])
+mask1 = cv2.inRange(hsv, lower, upper)
+lower = np.array([0, 60, 35])
+upper = np.array([4, 255, 164])
+mask2 = cv2.inRange(hsv, lower, upper)
+mask=cv2.bitwise_or(mask1,mask2)
 
-lower = np.array([80, 50, 8])
-upper = np.array([119, 252, 182])
-mask = cv2.inRange(hsv, lower, upper)
+
 
 result = cv2.bitwise_or(img, img, mask=mask)
 
