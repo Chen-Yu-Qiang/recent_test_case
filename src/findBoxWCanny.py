@@ -12,6 +12,7 @@ from cv2 import aruco
 r=None
 g=None
 b=None
+DEBUG_MODE=0
 HSVrang={
     "rL1":[174, 165, 35],
     "rH1":[179, 255, 164],
@@ -45,8 +46,8 @@ def findRect(img,color):
             upper_g = np.array(HSVrang["gH"])
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_g = np.array([67, 180, 30])
-            upper_g = np.array([78, 253, 118])
+            lower_g = np.array([67, 70, 30])
+            upper_g = np.array([78, 253, 160])
         else:
             lower_g = np.array([67, 102, 109])
             upper_g = np.array([78, 229, 251])
@@ -65,10 +66,10 @@ def findRect(img,color):
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_red = np.array([174, 165, 35])
+            lower_red = np.array([174, 60, 35])
             upper_red = np.array([179, 255, 164])
             mask1 = cv2.inRange(hsv, lower_red, upper_red)
-            lower_red = np.array([0, 165, 35])
+            lower_red = np.array([0, 60, 35])
             upper_red = np.array([4, 255, 164])
             mask2 = cv2.inRange(hsv, lower_red, upper_red)
         else:
@@ -89,7 +90,7 @@ def findRect(img,color):
             upper_b = np.array(HSVrang["bH"])
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_b = np.array([80, 110, 8])
+            lower_b = np.array([80, 80, 8])
             upper_b = np.array([119, 252, 122])
         else:
             lower_b = np.array([108, 126, 124])
@@ -183,14 +184,16 @@ def findCanny(img,color):
     blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     # cv2.imshow('blurred', blurred)
     canny=blurred[y_min:y_max,x_min:x_max]
-    cv2.imshow('canny1'+color, canny)
-    cv2.waitKey(1)
+    if DEBUG_MODE==1:
+        cv2.imshow('canny1'+color, canny)
+        cv2.waitKey(1)
     # print("G",canny.shape)
     # cv2.imshow('canny'+color, canny)
     # cv2.waitKey(0)
     canny = cv2.Canny(canny, 70, 120) 
-    # cv2.imshow('canny2'+color, canny)
-    # cv2.waitKey(0)
+    if DEBUG_MODE==1:
+        cv2.imshow('canny2'+color, canny)
+        cv2.waitKey(1)
     # aaa=blurred[y_min:y_max,x_min:x_max]
     # lines = cv2.HoughLines(canny, 1, np.pi / 180, 50)
     # print(lines)
@@ -223,8 +226,9 @@ def findCanny(img,color):
             contours[ii][i]=[[contours[ii][i][0][0]+x_min,contours[ii][i][0][1]+y_min]] 
 
     # cv2.drawContours(image,contours,-1,(0,0,255),2) 
-    # cv2.imshow('image'+color, image)
-    # cv2.waitKey(1)
+    # if DEBUG_MODE==1:
+    #     cv2.imshow('image'+color, image)
+    #     cv2.waitKey(1)
     A_max=0
     c_max=None
     # print(len(contours))
@@ -532,17 +536,18 @@ def findRGB(img):
     # # # print(xywh(div1234(r))) 
 
     # ===========================Multithreading
-
-    # res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
-    # r=res[0]
-    # g=res[1]
-    # b=res[2]
+    if not DEBUG_MODE:
+        res = pool.map(findCanny_mp, [(img,"r"),(img,"g"),(img,"b")])
+        r=res[0]
+        g=res[1]
+        b=res[2]
 
 
     # ==========================Single thread
-    r=findCanny(img,"r")
-    g=findCanny(img,"g")
-    b=findCanny(img,"b")
+    if DEBUG_MODE:
+        r=findCanny(img,"r")
+        g=findCanny(img,"g")
+        b=findCanny(img,"b")
 
     eee=0
     if not r is None:
@@ -554,7 +559,7 @@ def findRGB(img):
         if not isConvex(r):
             eee=1
             r=None
-            print("r ======================")
+            print("r not isConvex")
         # print("r",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not g is None:
@@ -566,7 +571,7 @@ def findRGB(img):
         if not isConvex(r):
             eee=1
             g=None
-            print("g ======================")
+            print("g not isConvex")
         # print("g",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))
     if not b is None:
@@ -577,7 +582,7 @@ def findRGB(img):
             pass
         if not isConvex(b):
             b=None
-            print("b ======================")
+            print("b not isConvex")
 
         # print("b",x,y,w,h,a)
         # print(pnp.mypnp(div1234_point))

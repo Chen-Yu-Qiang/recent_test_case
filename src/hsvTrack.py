@@ -50,19 +50,30 @@ hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 
 
 # b
-# lower = np.array([80, 80, 8])
-# upper = np.array([119, 252, 182])
+
+lower = np.array([85, 80, 8])
+upper = np.array([119, 252, 182])
+mask = cv2.inRange(hsv, lower, upper)
+
+
+
+
 # g
-# lower = np.array([67, 70, 30])
-# upper = np.array([78, 253, 160])
+
+# lower = np.array([67, 40, 30])
+# upper = np.array([84, 253, 160])
 # mask = cv2.inRange(hsv, lower, upper)
-lower = np.array([174, 60, 35])
-upper = np.array([179, 255, 164])
-mask1 = cv2.inRange(hsv, lower, upper)
-lower = np.array([0, 60, 35])
-upper = np.array([4, 255, 164])
-mask2 = cv2.inRange(hsv, lower, upper)
-mask=cv2.bitwise_or(mask1,mask2)
+
+
+# r
+
+# lower = np.array([170, 60, 35])
+# upper = np.array([179, 255, 180])
+# mask1 = cv2.inRange(hsv, lower, upper)
+# lower = np.array([0, 60, 35])
+# upper = np.array([4, 255, 180])
+# mask2 = cv2.inRange(hsv, lower, upper)
+# mask=cv2.bitwise_or(mask1,mask2)
 
 
 

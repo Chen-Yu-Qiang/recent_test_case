@@ -24,6 +24,7 @@ x_d = 1
 y_d = 0
 z_d = 0
 power_last=-1
+DEBUG_MODE=0
 def cb_box(data):
     global box_x,box_y,box_z,box_t
     box_x=data.linear.x
@@ -77,24 +78,27 @@ class image_converter:
             #    img_set[i]=cv2.cvtColor(img_set[i], cv2.COLOR_BGR2HSV) 
 
             # multi==================================================
-            # res = self.pool.map(findBoxWCanny.findRGB, img_set)
-            # for i in range(len(xyid)):
-            #     r=None
-            #     g=None
-            #     b=None
-            #     ang=None
-            #     r,g,b,ang=res[i]
-            #     # print(r,g,b,ang)
-            #     self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+            if not DEBUG_MODE:
+                res = self.pool.map(findBoxWCanny.findRGB, img_set)
+                for i in range(len(xyid)):
+                    r=None
+                    g=None
+                    b=None
+                    ang=None
+                    r,g,b,ang=res[i]
+                    # print(r,g,b,ang)
+                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+
             # single===================================================
-            for i in range(len(xyid)):
-                r=None
-                g=None
-                b=None
-                ang=None                
-                r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
-                # print(r,g,b,ang)
-                self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+            if DEBUG_MODE:
+                for i in range(len(xyid)):
+                    r=None
+                    g=None
+                    b=None
+                    ang=None                
+                    r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
+                    # print(r,g,b,ang)
+                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
 
 
             #============================================================
