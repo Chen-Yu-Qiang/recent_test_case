@@ -11,7 +11,7 @@ def nothing(a):
     global aaa
     aaa=1
 
-img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-29 18-25-14.png")
+img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-29 21-55-13.png")
 
 # convert to HSV
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 

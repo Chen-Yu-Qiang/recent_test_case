@@ -117,7 +117,15 @@ def findRect(img,color):
 
 
     gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
-    ret,binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
+    if DEBUG_MODE:
+        cv2.imshow('gray'+str(color), gray)
+        cv2.waitKey(0)
+    ret,binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+    if DEBUG_MODE:
+        cv2.imshow('threshold'+str(color), binary)
+        cv2.waitKey(0)
+
+
     # cv2.imshow('erosion'+str(color), erosion)
     # cv2.waitKey(0)
 
@@ -137,6 +145,15 @@ def findRect(img,color):
         if cv2.contourArea(c)>A_max and w1>50 and h1>70 :
             A_max=cv2.contourArea(c)
             c_max=c
+
+    # peri = cv2.arcLength(c_max, True) 
+    # approx1 = cv2.approxPolyDP(c_max, 0.05*peri, True)
+    # # print(len(approx1),len(approx1[0]))
+    # img2=cv2.polylines(img, [approx1], True, (255, 0, 0), 1) 
+    # if DEBUG_MODE:
+    #     cv2.imshow('img2', img2)
+    #     cv2.waitKey(0)
+    # print(approx1)
 
     x, y, w, h = cv2.boundingRect(c_max)
     if DEBUG_MODE==1:
@@ -182,50 +199,49 @@ def findCanny(img,color):
     # cv2.imshow('cut'+color, image[y_min:y_max,x_min:x_max])
     # cv2.waitKey(1)   
     # print(image.shape)
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    blurred = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
-    blurred = cv2.GaussianBlur(gray, (5, 5), 0)
+    # blurred = cv2.GaussianBlur(gray, (5, 5), 0)
     # cv2.imshow('blurred', blurred)
-    canny=blurred[y_min:y_max,x_min:x_max]
-    if DEBUG_MODE==1:
-        cv2.imshow('canny1'+color, canny)
-        cv2.waitKey(1)
+    blurred2=blurred[y_min:y_max,x_min:x_max]
+
     # print("G",canny.shape)
-    # cv2.imshow('canny'+color, canny)
-    # cv2.waitKey(0)
-    canny = cv2.Canny(canny, 70, 120) 
-    if DEBUG_MODE==1:
-        cv2.imshow('canny2'+color, canny)
-        cv2.waitKey(1)
-    # aaa=blurred[y_min:y_max,x_min:x_max]
-    # lines = cv2.HoughLines(canny, 1, np.pi / 180, 50)
-    # print(lines)
-    # for rho,theta in lines[0]:
-    #     a = np.cos(theta)
-    #     b = np.sin(theta)
-    #     x0 = a*rho
-    #     y0 = b*rho
-    #     x1 = int(x0 + 50*(-b))
-    #     y1 = int(y0 + 50*(a))
-    #     x2 = int(x0 - 50*(-b)) 
-    #     y2 = int(y0 - 50*(a))
+    blurred2=255-blurred2
+    if DEBUG_MODE:
+        cv2.imshow('canny'+color, blurred2)
+        cv2.waitKey(0)
 
-    #     aaa=cv2.line(aaa,(x1,y1),(x2,y2),(0,255,255),2)
 
-    # cv2.imshow('aaa'+color, aaa)
-    # cv2.waitKey(0)
-    if canny is None:
-        print("canny is none",color)
-        return simp
-    canny = cv2.GaussianBlur(canny, (3, 3), 0)
-    # cv2.imshow('canny'+color, canny)
-    # cv2.waitKey(0)
+    ret,binary = cv2.threshold(blurred2, 0, 255, cv2.THRESH_BINARY+cv2.THRESH_OTSU)
+
+    if DEBUG_MODE:
+        cv2.imshow('binary2'+color, binary)
+        cv2.waitKey(0)
+
+
+    # canny=================================
+    # canny = cv2.Canny(canny, 70, 120) 
+    # if DEBUG_MODE==1:
+    #     cv2.imshow('canny2'+color, canny)
+    #     cv2.waitKey(1)
+
+
+    # if canny is None:
+    #     print("canny is none",color)
+    #     return simp
+    # canny = cv2.GaussianBlur(canny, (3, 3), 0)
+    # # cv2.imshow('canny'+color, canny)
+    # # cv2.waitKey(0)
+    # binary=canny
+
+    # canny=================================
 
 
     # print("F")
-    _,contours, _ = cv2.findContours(canny, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     for ii in range(len(contours)):
         for i in range(len(contours[ii])):
+            # print(contours[ii][i][0][0],contours[ii][i][0][1])
             contours[ii][i]=[[contours[ii][i][0][0]+x_min,contours[ii][i][0][1]+y_min]] 
 
     # cv2.drawContours(image,contours,-1,(0,0,255),2) 
@@ -237,7 +253,7 @@ def findCanny(img,color):
     # print(len(contours))
     for c in contours:
         __, _, w1, h1 = cv2.boundingRect(c) 
-        #print(cv2.boundingRect(c))
+        # print(cv2.boundingRect(c))
         if cv2.contourArea(c)>A_max and w1>50 and h1>70 :
             A_max=cv2.contourArea(c)
             c_max=c
@@ -245,15 +261,17 @@ def findCanny(img,color):
         print("no max area",color)
         return simp
     #print(c_max)
-    cv2.drawContours(image,c_max,-1,(0,0,255),2) 
+    # cv2.drawContours(image,c_max,-1,(0,0,255),2) 
     # cv2.imshow('mavimage'+color, image)
     # cv2.waitKey(1)
     peri = cv2.arcLength(c_max, True) 
     approx1 = cv2.approxPolyDP(c_max, 0.05*peri, True)
     # print(len(approx1),len(approx1[0]))
     cv2.polylines(image, [approx1], True, (255, 0, 0), 1) 
-    # cv2.imshow('imageHSV', image)
-    # print(approx1)
+    if DEBUG_MODE:
+        cv2.imshow('imageHSV', image)
+        cv2.waitKey(0)
+        # print(approx1)
     if  not len(approx1)==4:
         # print("len(approx1)=",len(approx1),color)
         # print(approx1)

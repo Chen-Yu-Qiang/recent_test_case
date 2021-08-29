@@ -24,7 +24,7 @@ x_d = 1
 y_d = 0
 z_d = 0
 power_last=-1
-DEBUG_MODE=0
+DEBUG_MODE=findBoxWCanny.DEBUG_MODE
 def cb_box(data):
     global box_x,box_y,box_z,box_t
     box_x=data.linear.x
