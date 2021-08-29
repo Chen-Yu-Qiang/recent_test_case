@@ -1108,7 +1108,6 @@ if __name__ == '__main__':
     #   test mulit target
     import mulitTarget
 
-
     filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
     img = cv2.imread(filename)
     xyid,ip = mulitTarget.find_aruco_mean(img)
