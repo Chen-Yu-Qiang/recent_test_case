@@ -23,8 +23,14 @@ def cb_box(data):
     measure_y_p.update([[box_y]])
     measure_z_p.update([[box_z]])
 
+
+last_time=time.time()
+last_x=0
+last_y=0
+last_z=0
+
 def cb_odom(data):
-    global measure_x_v,measure_y_v,measure_z_v
+    global measure_x_v,measure_y_v,measure_z_v,measure_x_v_2,measure_y_v_2,measure_z_v_2,last_time,last_x,last_y,last_z,v_odom_pub
     ang=12*np.pi/180
     vx = -data.twist.twist.angular.x
     vy = data.twist.twist.angular.y
@@ -34,6 +40,30 @@ def cb_odom(data):
     measure_y_v.update([[vy]])
     measure_z_v.update([[vz]])
     cb_ang_imu(data)
+    now_time=time.time()
+    vx=(-data.pose.pose.position.x-last_x)/(now_time-last_time)
+    vy=(data.pose.pose.position.y-last_y)/(now_time-last_time)
+    vz=(data.pose.pose.position.z-last_z)/(now_time-last_time)
+    vx=min(1.5,vx)
+    vy=min(1.5,vy)
+    vz=min(1.5,vz)
+    vx=max(-1.5,vx)
+    vy=max(-1.5,vy)
+    vz=max(-1.5,vz)
+
+    v_odom_pub_msg=Twist()
+    v_odom_pub_msg.linear.x=vx
+    v_odom_pub_msg.linear.y=vy
+    v_odom_pub_msg.linear.z=vz
+    v_odom_pub.publish(v_odom_pub_msg)
+
+    measure_x_v_2.update([[vx]])
+    measure_y_v_2.update([[vy]])
+    measure_z_v_2.update([[vz]])
+    last_time=now_time
+    last_x=-data.pose.pose.position.x
+    last_y=data.pose.pose.position.y
+    last_z=data.pose.pose.position.z
 
 class ang_cont:
     def __init__(self,t0=0):
@@ -73,21 +103,29 @@ kf_x.constantSpeedWDrift(dt,1.5,0,0,0.01,0.01,0.000001)
 measure_x_p=kf_lib.KF_updater(1,kf_x)
 measure_x_p.constantSpeedWDrift_Position(1)
 measure_x_v=kf_lib.KF_updater(1,kf_x)
-measure_x_v.constantSpeedWDrift_Speed(1)
+measure_x_v.constantSpeedWDrift_SpeedWDrift(1)
+measure_x_v_2=kf_lib.KF_updater(1,kf_x)
+measure_x_v_2.constantSpeedWDrift_Speed(0.5)
 
 kf_y=kf_lib.KalmanFilter(3)
 kf_y.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
 measure_y_p=kf_lib.KF_updater(1,kf_y)
 measure_y_p.constantSpeedWDrift_Position(1)
 measure_y_v=kf_lib.KF_updater(1,kf_y)
-measure_y_v.constantSpeedWDrift_Speed(1)
+measure_y_v.constantSpeedWDrift_SpeedWDrift(1)
+measure_y_v_2=kf_lib.KF_updater(1,kf_y)
+measure_y_v_2.constantSpeedWDrift_Speed(0.5)
+
 
 kf_z=kf_lib.KalmanFilter(3)
 kf_z.constantSpeedWDrift(dt,0,0,0,0.01,0.01,0.000001)
 measure_z_p=kf_lib.KF_updater(1,kf_z)
 measure_z_p.constantSpeedWDrift_Position(1)
 measure_z_v=kf_lib.KF_updater(1,kf_z)
-measure_z_v.constantSpeedWDrift_Speed(1)
+measure_z_v.constantSpeedWDrift_SpeedWDrift(1)
+measure_z_v_2=kf_lib.KF_updater(1,kf_z)
+measure_z_v_2.constantSpeedWDrift_Speed(0.5)
+
 
 kf_th=kf_lib.KalmanFilter(2)
 measure_th_vp=kf_lib.KF_updater(1,kf_th)
@@ -108,7 +146,9 @@ ang_sub = rospy.Subscriber('from_img_ang2', Float32, cb_ang_img)
 # imu_sub = rospy.Subscriber('tello/imu', Imu, cb_imu)
 # cmd_sub = rospy.Subscriber('tello/cmd_vel', Twist, cb_cmd)
 kf_p_pub = rospy.Publisher('from_kf', Twist, queue_size=1)
+v_odom_pub = rospy.Publisher('v_odom', Twist, queue_size=1)
 kf_pmat_pub = rospy.Publisher('kf_pmat', Twist, queue_size=1)
+kf_vmat_pub = rospy.Publisher('kf_vmat', Twist, queue_size=1)
 kf_vmean_pub = rospy.Publisher('kf_vmean', Twist, queue_size=1)
 kf_p_predict_pub = rospy.Publisher('kf_p_predict', Twist, queue_size=1)
 kf_p_measure_pub = rospy.Publisher('kf_p_measure', Twist, queue_size=1)
@@ -133,6 +173,12 @@ while  not rospy.is_shutdown():
     kf_pmat_pub_msg.angular.z=kf_th.P[0][0]
     kf_pmat_pub.publish(kf_pmat_pub_msg)
 
+    kf_vmat_pub_msg=Twist()
+    kf_vmat_pub_msg.linear.x=kf_x.P[1][1]
+    kf_vmat_pub_msg.linear.y=kf_y.P[1][1]
+    kf_vmat_pub_msg.linear.z=kf_z.P[1][1]
+    kf_vmat_pub_msg.angular.z=kf_th.P[1][1]
+    kf_vmat_pub.publish(kf_vmat_pub_msg)
 
 
     kf_p_msg=Twist()

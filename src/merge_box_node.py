@@ -61,7 +61,7 @@ class box_data:
         self.lock.release()
 
 
-    def getXYZ(self,pixAT1m):
+    def getXYZ_w(self,pixAT1m):
         self.lock.acquire()
         distance = pixAT1m / (self.w+0.001)
         x_now = min(distance,10)
@@ -77,7 +77,23 @@ class box_data:
         box_pub_msg.linear.y=y_now
         box_pub_msg.linear.z=x_now*np.sin(ang) + z_now*np.cos(ang)+0.9
         return box_pub_msg
-    
+
+    def getXYZ_h(self,pixAT1m):
+        self.lock.acquire()
+        distance = pixAT1m / (self.h+0.001)
+        x_now = min(distance,10)
+        y_now = (((self.x-480) * distance) / 952)*(-1)
+        z_now = ((self.y-360) * distance) / 952
+        self.lock.release()
+        box_pub_msg = Twist()
+        # box_pub_msg.linear.x = x_now
+        # box_pub_msg.linear.y = y_now
+        # box_pub_msg.linear.z = z_now+0.9
+        ang=12*np.pi/180
+        box_pub_msg.linear.x=x_now*np.cos(ang) - z_now*np.sin(ang)
+        box_pub_msg.linear.y=y_now
+        box_pub_msg.linear.z=x_now*np.sin(ang) + z_now*np.cos(ang)+0.9
+        return box_pub_msg    
     def isTimeOut(self):
         if (time.time()-self.newtime)>0.2:
             return True
@@ -96,9 +112,9 @@ class board_data:
             self.pub=rospy.Publisher('target'+str(self.ArucoID), Twist, queue_size=1)
 
     def for_positioning(self):
-        box_pub_r_msg=self.r.getXYZ(184)
-        box_pub_g_msg=self.g.getXYZ(184)
-        box_pub_b_msg=self.b.getXYZ(184)
+        box_pub_r_msg=self.r.getXYZ_h(276)
+        box_pub_g_msg=self.g.getXYZ_h(276)
+        box_pub_b_msg=self.b.getXYZ_h(276)
         box_pub_r.publish(Rz(box_pub_r_msg))
         box_pub_g.publish(Rz(box_pub_g_msg))
         box_pub_b.publish(Rz(box_pub_b_msg))
@@ -107,11 +123,11 @@ class board_data:
         img_ang_pub.publish(self.img_ang)
 
     def for_target(self):
-        box_pub_r_msg_target=self.TwistAddArucoID(self.r.getXYZ(184))
+        box_pub_r_msg_target=self.TwistAddArucoID(self.r.getXYZ_h(276))
         box_pub_r_msg_target=self.target_filter.update(box_pub_r_msg_target)
         box_pub_r_msg_target.linear.z=box_pub_r_msg_target.linear.z-0.9
-        box_pub_g_msg_target=self.TwistAddArucoID(self.g.getXYZ(184))
-        box_pub_b_msg_target=self.TwistAddArucoID(self.b.getXYZ(184))
+        box_pub_g_msg_target=self.TwistAddArucoID(self.g.getXYZ_h(276))
+        box_pub_b_msg_target=self.TwistAddArucoID(self.b.getXYZ_h(276))
         box_pub_r_target.publish(Rz(box_pub_r_msg_target))
         box_pub_g_target.publish(Rz(box_pub_g_msg_target))
         box_pub_b_target.publish(Rz(box_pub_b_msg_target))
@@ -207,9 +223,18 @@ def cb_img_ang(data):
 
 def cb_box_r(data):
     global board_set
-    # data.angular.x=data.angular.x/np.sin(board_set[int(data.linear.z)].img_ang)
-    # print(data.linear.z,data.angular.x,board_set[int(data.linear.z)].img_ang*57.3)
+
     board_set[int(data.linear.z)].r.setFromTwistMsg(data)
+    # if int(data.linear.z)==52:
+    #     print(board_set[int(data.linear.z)].r.getXYZ(184))
+
+    data.angular.x=data.angular.x/np.sin(board_set[int(data.linear.z)].img_ang)
+    # if int(data.linear.z)==52:
+    #     print(data.linear.z,data.angular.x,data.angular.x*np.sin(board_set[int(data.linear.z)].img_ang),board_set[int(data.linear.z)].img_ang*57.3)
+    board_set[int(data.linear.z)].r.setFromTwistMsg(data)
+    # if int(data.linear.z)==52:
+    #     print(board_set[int(data.linear.z)].r.getXYZ(184))
+    #     print("=============")
 
 def cb_box_g(data):
     global board_set

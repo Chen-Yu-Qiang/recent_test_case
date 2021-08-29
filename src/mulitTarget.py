@@ -10,19 +10,24 @@ from geometry_msgs.msg import Twist
 def find_aruco_mean(img):
     aruco_dict = aruco.Dictionary_get(aruco.DICT_5X5_100)
     corners, ids, rejectedImgPoints = aruco.detectMarkers(img, aruco_dict)
+    
     # print(corners, ids)
     if ids is None:
         return -1,-1
+    # else:
+        # print(ids)
     x=[0 for i in range(len(corners))]
     y=[0 for i in range(len(corners))]
     idss=[0 for i in range(len(corners))]
     xyid=[0 for i in range(len(corners))]
     max_x=[0 for i in range(len(corners))]
+    min_x=[960 for i in range(len(corners))]
     for i in range(len(corners)):
         for j in range(4):
             x[i]=x[i]+corners[i][0][j][0]/4
             y[i]=y[i]+corners[i][0][j][1]/4
             max_x[i]=max(max_x[i],corners[i][0][j][0])
+            min_x[i]=min(min_x[i],corners[i][0][j][0])
         idss[i]=ids[i][0]
 
         # print(xyid)
@@ -36,14 +41,16 @@ def find_aruco_mean(img):
             ip[i]=(xyid[i+1][0]-xyid[i][0])/4+xyid[i][0]
         if i==(len(xyid)-2) and (ip[i]<max(max_x)):
             ip[i]=xyid[i][0]+(max(max_x)-xyid[i][0])*2
-            ip[i]=max(ip[i],960)
+            ip[i]=min(ip[i],960)
+        s_ip=max(0,xyid[0][0]-(xyid[0][0]-min(min_x))*6)
         xyid=xyid[0:-1]
+        ip=[s_ip]+ip
+        # print(ip)
     return xyid,ip
 
 def divImg(ip,img):
-    img_set=[img for i in range(len(ip))]
+    img_set=[img for i in range(len(ip)-1)]
     if len(ip)>=1:
-        ip=[0]+ip
         for i in range(len(ip)-1):
             sss=np.zeros([720,960],dtype=np.uint8)
             sss[0:720,int(ip[i]):int(ip[i+1])]=255

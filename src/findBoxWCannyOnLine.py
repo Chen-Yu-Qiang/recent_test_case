@@ -59,6 +59,7 @@ class image_converter:
         self.ttt=time.time()
         self.pool=ThreadPool()
         # self.pool=mp.Pool()
+        self.together_show=None
 
     def callback(self,data):
         if time.time()-self.ttt<0.01:
@@ -73,6 +74,7 @@ class image_converter:
                 return
 
             img_set = mulitTarget.divImg(ip,cv_image)
+            self.together_show=cv_image.copy()
             # for i in range(len(xyid)):
                 # cv2.imshow(str(xyid[i][2]),img_set[i])
             #    img_set[i]=cv2.cvtColor(img_set[i], cv2.COLOR_BGR2HSV) 
@@ -87,7 +89,7 @@ class image_converter:
                     ang=None
                     r,g,b,ang=res[i]
                     # print(r,g,b,ang)
-                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang,ip[i],ip[i+1])
 
             # single===================================================
             if DEBUG_MODE:
@@ -98,16 +100,20 @@ class image_converter:
                     ang=None                
                     r,g,b,ang=findBoxWCanny.findRGB(img_set[i])
                     # print(r,g,b,ang)
-                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang)
+                    self.MAIN(img_set[i],xyid[i][2],cv_image.copy(),r,g,b,ang,ip[i],ip[i+1])
 
 
             #============================================================
             # print(time.time()-ttt)
             # print("-------------")
+            self.t_show()
         except CvBridgeError as e:
             print(e)
-    def MAIN(self,cv_image,aruco_id,cv_image_org,r,g,b,ang):
-        cv_image=cv_image_org
+    def MAIN(self,cv_image0,aruco_id,cv_image_org,r,g,b,ang,ipLine1=0,ipLine2=959):
+        
+
+        cv_image=self.together_show
+        # print(r,g,b,ang)
         if not ang is None:
             if ang<2.618 and ang>0.524:
                 pub_ang.publish(ang)
@@ -173,9 +179,16 @@ class image_converter:
                 cv_image = cv2.putText(cv_image,str(aruco_id),(x,y),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
 
 
+        cv_image = cv2.line(cv_image,(int(ipLine1),0),(int(ipLine1),719), (0,0,0), 2)
+        cv_image = cv2.line(cv_image,(int(ipLine2),0),(int(ipLine2),719), (0,0,0), 2)
+        self.together_show=cv_image
+
+    def t_show(self):
+        cv_image=self.together_show
         addbox=cv2.circle(cv_image, (480,360), 5, 255)
         imgAndState = np.hstack((addbox,self.bgimg))
         imgAndState = cv2.line(imgAndState,(480,0),(480,719), (0,0,0), 1)
+        imgAndState = cv2.line(imgAndState,(0,360),(959,360), (0,0,0), 2)
         imgAndState = cv2.putText(imgAndState,str(power_last),(1130,200),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         imgAndState = cv2.putText(imgAndState,str(box_y),(1130,320),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
@@ -186,9 +199,9 @@ class image_converter:
         imgAndState = cv2.putText(imgAndState,str(z_d),(1130,515),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         imgAndState = cv2.putText(imgAndState,str(ang_d*57.296),(1130,555),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         cv2.imshow('addbox', imgAndState)
+        cv2.waitKey(1)
         self.isdoing=0
         self.ttt=time.time()
-        cv2.waitKey(1)
         
 
 

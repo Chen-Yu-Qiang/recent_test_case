@@ -10,6 +10,9 @@ class KF_updater:
         self.kf=kf
     
     def constantSpeedWDrift_Speed(self,R_v):
+        self.H=np.array([[0,1,0]])
+        self.R[0][0]=R_v
+    def constantSpeedWDrift_SpeedWDrift(self,R_v):
         self.H=np.array([[0,1,1]])
         self.R[0][0]=R_v
     def constantSpeedWDrift_Position(self,R_p):

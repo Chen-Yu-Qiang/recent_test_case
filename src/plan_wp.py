@@ -68,14 +68,6 @@ class target:
         self.measure_y_p.update(_data.linear.y)
         self.measure_z_p.update(_data.linear.z)
         self.measure_th_p.update(_data.angular.z)
-        
-
-        self.data=Twist()
-        self.data.linear.x=self.kf_x.X[0][0]
-        self.data.linear.y=self.kf_y.X[0][0]
-        self.data.linear.z=self.kf_z.X[0][0]
-        self.data.angular.z=self.kf_th.X[0][0]
-        self.after_filter_pub.publish(self.data)
 
         kf_pmat_pub_msg=Twist()
         kf_pmat_pub_msg.linear.x=self.kf_x.P[0][0]
@@ -83,6 +75,14 @@ class target:
         kf_pmat_pub_msg.linear.z=self.kf_z.P[0][0]
         kf_pmat_pub_msg.angular.z=self.kf_th.P[0][0]
         self.kf_pmat_pub.publish(kf_pmat_pub_msg)
+        
+        if kf_pmat_pub_msg.linear.x<0.1:
+            self.data=Twist()
+            self.data.linear.x=self.kf_x.X[0][0]
+            self.data.linear.y=self.kf_y.X[0][0]
+            self.data.linear.z=self.kf_z.X[0][0]
+            self.data.angular.z=self.kf_th.X[0][0]
+            self.after_filter_pub.publish(self.data)
 
         self.t=time.time()
     def isTimeout(self):

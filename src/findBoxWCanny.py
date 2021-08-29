@@ -91,32 +91,32 @@ def findRect(img,color):
             upper_b = np.array(HSVrang["bH"])
 
         elif tm_hour<=18 and tm_hour>=6 :
-            lower_b = np.array([80, 80, 8])
-            upper_b = np.array([119, 252, 122])
+            lower_b = np.array([85, 60, 8])
+            upper_b = np.array([140, 252, 122])
         else:
             lower_b = np.array([108, 126, 124])
             upper_b = np.array([116, 175, 161])
             lower_b = np.array([103, 126, 100])
             upper_b = np.array([116, 210, 180])
         mask=cv2.inRange(hsv, lower_b, upper_b)
-    
+
 
     
     # cv2.imshow('mask'+str(color), mask)
     # cv2.waitKey(1)
-    mask = cv2.dilate(mask, np.ones((17,17), np.uint8), iterations = 1)
+    # mask = cv2.dilate(mask, np.ones((17,17), np.uint8), iterations = 1)
     result = cv2.bitwise_and(img, img, mask=mask)
 
     # new
-    kernel = np.ones((17,17), np.uint8)
-    erosion = cv2.dilate(result, kernel, iterations = 1)
+    # kernel = np.ones((17,17), np.uint8)
+    # result = cv2.dilate(result, kernel, iterations = 1)
 
     # # old
     # kernel = np.ones((27,27), np.uint8)
-    # erosion = cv2.erode(result, kernel, iterations = 1)
+    # result = cv2.erode(result, kernel, iterations = 1)
 
 
-    gray = cv2.cvtColor(erosion, cv2.COLOR_BGR2GRAY)
+    gray = cv2.cvtColor(result, cv2.COLOR_BGR2GRAY)
     ret,binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY)
     # cv2.imshow('erosion'+str(color), erosion)
     # cv2.waitKey(0)
@@ -139,9 +139,10 @@ def findRect(img,color):
             c_max=c
 
     x, y, w, h = cv2.boundingRect(c_max)
-    # addbox=cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 1) 
-    # cv2.imshow("ad",addbox)
-    # cv2.waitKey(0)
+    if DEBUG_MODE==1:
+        addbox=cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 1) 
+        cv2.imshow("ad",addbox)
+        cv2.waitKey(1)
     # print(x,y,w,h,color)
    
     return x,y,w,h
@@ -161,10 +162,11 @@ def findCanny(img,color):
     img	=cv2.undistort(img, np.array([[921.170702, 0.000000, 459.904354], [0.000000, 919.018377, 351.238301], [0.000000, 0.000000, 1.000000]]), np.array([-0.033458, 0.105152, 0.001256, -0.006647, 0.000000]))
 
     x,y,w,h = findRect(img,color)
-  
+
+    simp=xywh2approx1(x,y,w,h)
     if w*h==0:
-        # print("findRect=0",color)
-        return
+        print("findRect=0",color)
+        return 
     mask = np.zeros((720,960,1), np.uint8) 
     mask.fill(0)
     cv2.rectangle(mask, (int(x-w*bigger), int(y-h*bigger)), (int(x+w*(1+bigger)), int(y+h*(1+bigger))), 255, -1)
@@ -214,7 +216,7 @@ def findCanny(img,color):
     # cv2.waitKey(0)
     if canny is None:
         print("canny is none",color)
-        return
+        return simp
     canny = cv2.GaussianBlur(canny, (3, 3), 0)
     # cv2.imshow('canny'+color, canny)
     # cv2.waitKey(0)
@@ -241,7 +243,7 @@ def findCanny(img,color):
             c_max=c
     if A_max==0:
         print("no max area",color)
-        return 
+        return simp
     #print(c_max)
     cv2.drawContours(image,c_max,-1,(0,0,255),2) 
     # cv2.imshow('mavimage'+color, image)
@@ -256,7 +258,7 @@ def findCanny(img,color):
         # print("len(approx1)=",len(approx1),color)
         # print(approx1)
         if len(approx1)<4:
-            return
+            return simp
         else:
             approx1=findnear(approx1)
             # print(approx1)
@@ -326,6 +328,12 @@ def div1234_plotPoly(pp):
 
     return np.array([[[x1,y1]],[[x3,y3]],[[x2,y2]],[[x4,y4]]])
 
+def xywh2approx1(x,y,w,h):
+    p1=[x,y]
+    p2=[x+w,y+h]
+    p3=[x+w,y]
+    p4=[x,y+h]
+    return np.array([[p1],[p2],[p3],[p4]])
 
 def xywh(p):
     [[x1,y1],[x2,y2],[x3,y3],[x4,y4]]=p
@@ -334,7 +342,7 @@ def xywh(p):
     # (x1,y1)  (x3,y3)
     # (x4,y4)  (x2,y2)
     w=0.5*(1.0*x3+x2-x1-x4)
-    h=0.5*(1.0*y3+y1-y2-y4)
+    h=0.5*(1.0*y2+y4-y1-y3)
     a=-0.5*(x2*y3+x3*y1+x1*y4+x4*y2-x3*y2-x1*y3-x4*y1-x2*y4)
     # print(p,w,h,a)
     # print(1.0*x-(x1+x2+x3+x4)*0.25)
@@ -590,8 +598,9 @@ def findRGB(img):
 
     cv2.polylines(img, [div1234_plotPoly(r),div1234_plotPoly(g),div1234_plotPoly(b)], True, ( 0,255, 0), 1)
     # print(time.time()-t)
-    # hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
-    # cv2.imshow("a",hsv)
+    if DEBUG_MODE==1:
+        hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
+        cv2.imshow("a",hsv)
     ang=None
     if (not r is None )and (not g is None) and eee==0:
         # p1234To3D(img)
@@ -1043,9 +1052,11 @@ if __name__ == '__main__':
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)
 
-    # filename="/time_RGB/2m0312-12-45.png"
-    # img = cv2.imread(os.getcwd()+filename)
-    # findRGB(img)
+    filename="/time_RGB/2m0312-12-45.png"
+    img = cv2.imread(os.getcwd()+filename)
+    findRGB(img)
+    cv2.imshow("a",img)
+    cv2.waitKey(0)    
 
     # filename="/time_RGB/2m0312-12+45.png"
     # img = cv2.imread(os.getcwd()+filename)
@@ -1107,30 +1118,30 @@ if __name__ == '__main__':
     #         writer.writerow([t_list[i]])
 
     #   test mulit target
-    import mulitTarget
+    # import mulitTarget
 
-    filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
-    img = cv2.imread(filename)
-    xyid,ip = mulitTarget.find_aruco_mean(img)
-    img_set = mulitTarget.divImg(ip,img)
-    for i in img_set:
-        cv2.imshow("q2",i)
-        cv2.waitKey(0)
-    pool=ThreadPool()
-    t=time.time()
-    import csv
+    # filename="/home/yuqiang/catkin_ws4/src/recent_test_case/4target.png"
+    # img = cv2.imread(filename)
+    # xyid,ip = mulitTarget.find_aruco_mean(img)
+    # img_set = mulitTarget.divImg(ip,img)
+    # for i in img_set:
+    #     cv2.imshow("q2",i)
+    #     cv2.waitKey(0)
+    # pool=ThreadPool()
+    # t=time.time()
+    # import csv
     
-    t_list=[0 for i in range(1000)]
-    for i in range(1000):
-        # res = pool.map(findRGB, img_set)
-        findRGB(img_set[0])
-        findRGB(img_set[1])
-        findRGB(img_set[2])
-        findRGB(img_set[3])
-        t_list[i]=time.time()-t
-        t=time.time()
-    print("========================")
-    with open('output4.csv', 'w') as csvfile:
-        writer = csv.writer(csvfile)
-        for i in range(1000):
-            writer.writerow([t_list[i]])
+    # t_list=[0 for i in range(1000)]
+    # for i in range(1000):
+    #     # res = pool.map(findRGB, img_set)
+    #     findRGB(img_set[0])
+    #     findRGB(img_set[1])
+    #     findRGB(img_set[2])
+    #     findRGB(img_set[3])
+    #     t_list[i]=time.time()-t
+    #     t=time.time()
+    # print("========================")
+    # with open('output4.csv', 'w') as csvfile:
+    #     writer = csv.writer(csvfile)
+    #     for i in range(1000):
+    #         writer.writerow([t_list[i]])
