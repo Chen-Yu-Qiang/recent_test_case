@@ -129,9 +129,13 @@ def findRect(img,color):
     # cv2.imshow('erosion'+str(color), erosion)
     # cv2.waitKey(0)
 
+
+    kernel = np.ones((5,5), np.uint8)
+    binary = cv2.dilate(binary, kernel, iterations = 1)
     
 
     _,contours, _ = cv2.findContours(binary, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    # print(contours)
     # img2=cv2.drawContours(img,contours,-1,(0,255,0),5)
     # cv2.imshow('erosion2'+str(color), img2)
     # cv2.waitKey(1)
@@ -157,10 +161,11 @@ def findRect(img,color):
 
     x, y, w, h = cv2.boundingRect(c_max)
     if DEBUG_MODE==1:
+        img=cv2.drawContours(img,contours,-1,(0,255,0),5)
         addbox=cv2.rectangle(img, (x,y), (x+w,y+h), (0,255,0), 1) 
+        print(x,y,w,h,color)
         cv2.imshow("ad",addbox)
         cv2.waitKey(1)
-    # print(x,y,w,h,color)
    
     return x,y,w,h
 
@@ -1061,7 +1066,7 @@ if __name__ == '__main__':
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)
 
-    # filename="/time_RGB/1m0312-12.png"
+    # filename="/time_RGB/1m0312-12.png" 
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)
 
@@ -1072,10 +1077,11 @@ if __name__ == '__main__':
 
     filename="/time_RGB/2m0312-12-45.png"
     img = cv2.imread(os.getcwd()+filename)
+    img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-30 17-47-28.png") 
     findRGB(img)
     cv2.imshow("a",img)
     cv2.waitKey(0)    
-
+ 
     # filename="/time_RGB/2m0312-12+45.png"
     # img = cv2.imread(os.getcwd()+filename)
     # findRGB(img)

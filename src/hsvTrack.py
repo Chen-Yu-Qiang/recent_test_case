@@ -11,32 +11,32 @@ def nothing(a):
     global aaa
     aaa=1
 
-img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-29 21-55-13.png")
+img = cv2.imread("/home/yuqiang/Pictures/Screenshot from 2021-08-30 17-47-28.png")
 
 # convert to HSV
 hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV) 
 
-h = hsv[0]
-s = hsv[1]
-v = hsv[2]
-img_gray_hist = cv2.calcHist([hsv], [0], None, [180], [0, 179])
-plt.plot(img_gray_hist)
-plt.title('Grayscale Histogram')
-plt.xlabel('Bins')
-plt.ylabel('# of Pixels')
-plt.show()
-img_gray_hist = cv2.calcHist([hsv], [1], None, [180], [0, 179])
-plt.plot(img_gray_hist)
-plt.title('Grayscale Histogram')
-plt.xlabel('Bins')
-plt.ylabel('# of Pixels')
-plt.show()
-img_gray_hist = cv2.calcHist([hsv], [2], None, [180], [0, 179])
-plt.plot(img_gray_hist)
-plt.title('Grayscale Histogram')
-plt.xlabel('Bins')
-plt.ylabel('# of Pixels')
-plt.show()
+# h = hsv[0]
+# s = hsv[1]
+# v = hsv[2]
+# img_gray_hist = cv2.calcHist([hsv], [0], None, [180], [0, 179])
+# plt.plot(img_gray_hist)
+# plt.title('Grayscale Histogram')
+# plt.xlabel('Bins')
+# plt.ylabel('# of Pixels')
+# plt.show()
+# img_gray_hist = cv2.calcHist([hsv], [1], None, [180], [0, 179])
+# plt.plot(img_gray_hist)
+# plt.title('Grayscale Histogram')
+# plt.xlabel('Bins')
+# plt.ylabel('# of Pixels')
+# plt.show()
+# img_gray_hist = cv2.calcHist([hsv], [2], None, [180], [0, 179])
+# plt.plot(img_gray_hist)
+# plt.title('Grayscale Histogram')
+# plt.xlabel('Bins')
+# plt.ylabel('# of Pixels')
+# plt.show()
 
 # while 1:
 #     cv2.createTrackbar('H_low', 'HSV Calibrator', 80, 179, nothing)

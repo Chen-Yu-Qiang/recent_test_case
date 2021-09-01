@@ -160,7 +160,7 @@ def mut_point(ci,taskPoint):
 
 def isCovered(ci,pk_list):
     for i in range(len(pk_list)):
-        if d_v(pk_list(i),ci)>1:
+        if d_v(pk_list[i],ci)>1:
             return 0
     return 1
 
@@ -208,7 +208,7 @@ def ci2twist(ci):
 class viewPanner:
     def __init__(self):
         self.taskPoint=[]
-        self.ci=[0,0,0,np.pi]
+        self.ci=[0.1,0,0,np.pi]
         self.it_length=1
     def set_taskPoint(self,_taskPoint):
         self.taskPoint=_taskPoint
@@ -222,7 +222,7 @@ class viewPanner:
         return 0
     def one_it(self):
         delta_ci=mut_point(self.ci,self.taskPoint)
-
+        # print(delta_ci)
         self.ci[0]=self.ci[0]+self.it_length*delta_ci[0]
         self.ci[1]=self.ci[1]+self.it_length*delta_ci[1]
         self.ci[2]=self.ci[2]+self.it_length*delta_ci[2]

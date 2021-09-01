@@ -92,10 +92,21 @@ class target:
             return 1
 
 rospy.init_node('plan_node', anonymous=True)
-plan_wp_pub = rospy.Publisher('plan_wp', Twist, queue_size=1)
+plan_wp_51_52_pub = rospy.Publisher('plan_wp_51_52', Twist, queue_size=1)
+plan_wp_52_pub = rospy.Publisher('plan_wp_52', Twist, queue_size=1)
+plan_wp_0_51_pub = rospy.Publisher('plan_wp_0_51', Twist, queue_size=1)
+plan_wp_0_52_pub = rospy.Publisher('plan_wp_0_52', Twist, queue_size=1)
 target_set=[target(i) for i in range(51,60)]
 rate = rospy.Rate(1.0/dt)
-vper=viewPanning.viewPanner()
+vper_51_52=viewPanning.viewPanner()
+vper_0_51=viewPanning.viewPanner()
+vper_0_52=viewPanning.viewPanner()
+ref_board=Twist()
+ref_board.linear.x=0
+ref_board.linear.y=0
+ref_board.linear.z=0.9
+ref_board.angular.z=np.pi*0.5
+
 while not rospy.is_shutdown():
     
     for i in [0,1]:
@@ -103,18 +114,74 @@ while not rospy.is_shutdown():
         target_set[i].kf_y.prediction([])
         target_set[i].kf_z.prediction([])
         target_set[i].kf_th.prediction([])
+
+    
     if target_set[0].isTimeout() and target_set[1].isTimeout() :
         pass
     elif target_set[0].isTimeout() and (not target_set[1].isTimeout()):
-        res=target_set[1].data
-        plan_wp_pub.publish(res)
+
+        
+        taskPoint=viewPanning.twist2taskpoint([target_set[1].data,ref_board])
+        vper_0_52.set_taskPoint(taskPoint)
+        res=viewPanning.ci2twist(vper_0_52.gant(times=50))
+        plan_wp_0_52_pub.publish(res)
+
     elif (not target_set[0].isTimeout()) and (target_set[1].isTimeout()):
-        res=target_set[0].data
-        plan_wp_pub.publish(res)
+
+
+        taskPoint=viewPanning.twist2taskpoint([target_set[0].data,ref_board])
+        vper_0_51.set_taskPoint(taskPoint)
+        c051=vper_0_51.gant(times=50)
+        res=viewPanning.ci2twist(c051)
+        plan_wp_0_51_pub.publish(res)
+
     elif (not target_set[0].isTimeout()) and (not target_set[1].isTimeout()):
         # res=mulitTarget.TwoTargetPos(target_set[0].data,target_set[1].data)
         taskPoint=viewPanning.twist2taskpoint([target_set[0].data,target_set[1].data])
-        vper.set_taskPoint(taskPoint)
-        res=viewPanning.ci2twist(vper.gant(times=50))
-        plan_wp_pub.publish(res)
+        vper_51_52.set_taskPoint(taskPoint)
+        ci5152=vper_51_52.gant(times=50)
+        if viewPanning.isCovered(ci5152,taskPoint):
+            res=viewPanning.ci2twist(ci5152)
+            plan_wp_51_52_pub.publish(res)
+            plan_wp_52_pub.publish(res)
+        else:
+            taskPoint=viewPanning.twist2taskpoint([target_set[0].data])
+            vper_51_52.set_taskPoint(taskPoint)
+            ci51=vper_51_52.gant(times=20)
+            res=viewPanning.ci2twist(ci51)
+            plan_wp_51_52_pub.publish(res)
+
+            taskPoint=viewPanning.twist2taskpoint([target_set[1].data])
+            vper_51_52.set_taskPoint(taskPoint)
+            ci52=vper_51_52.gant(times=20)
+            res=viewPanning.ci2twist(ci52)
+            plan_wp_52_pub.publish(res)
+
+        taskPoint=viewPanning.twist2taskpoint([target_set[0].data,ref_board])
+        vper_0_51.set_taskPoint(taskPoint)
+        ci051=vper_0_51.gant(times=50)
+        if viewPanning.isCovered(ci051,taskPoint):
+            res=viewPanning.ci2twist(ci051)
+            plan_wp_0_51_pub.publish(res)
+        else:
+            taskPoint=viewPanning.twist2taskpoint([target_set[0].data])
+            vper_0_51.set_taskPoint(taskPoint)
+            ci051=vper_0_51.gant(times=20)
+            res=viewPanning.ci2twist(ci051)
+            plan_wp_0_51_pub.publish(res)
+
+        taskPoint=viewPanning.twist2taskpoint([target_set[1].data,ref_board])
+        vper_0_52.set_taskPoint(taskPoint)
+        ci052=vper_0_52.gant(times=50)
+        if viewPanning.isCovered(ci052,taskPoint):
+            res=viewPanning.ci2twist(ci052)
+            plan_wp_0_52_pub.publish(res)
+        else:
+            taskPoint=viewPanning.twist2taskpoint([target_set[0].data])
+            vper_0_52.set_taskPoint(taskPoint)
+            ci052=vper_0_52.gant(times=20)
+            res=viewPanning.ci2twist(ci052)
+            plan_wp_0_52_pub.publish(res)
+
+
     rate.sleep()

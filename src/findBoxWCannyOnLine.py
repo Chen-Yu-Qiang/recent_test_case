@@ -187,8 +187,8 @@ class image_converter:
         cv_image=self.together_show
         addbox=cv2.circle(cv_image, (480,360), 5, 255)
         imgAndState = np.hstack((addbox,self.bgimg))
-        imgAndState = cv2.line(imgAndState,(480,0),(480,719), (0,0,0), 1)
-        imgAndState = cv2.line(imgAndState,(0,360),(959,360), (0,0,0), 2)
+        # imgAndState = cv2.line(imgAndState,(480,0),(480,719), (0,0,0), 1)
+        # imgAndState = cv2.line(imgAndState,(0,360),(959,360), (0,0,0), 2)
         imgAndState = cv2.putText(imgAndState,str(power_last),(1130,200),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         imgAndState = cv2.putText(imgAndState,str(box_x),(1130,280),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
         imgAndState = cv2.putText(imgAndState,str(box_y),(1130,320),cv2.FONT_HERSHEY_SIMPLEX,1, (0,0,0), 1, cv2.LINE_AA)
