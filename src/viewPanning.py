@@ -7,7 +7,7 @@ from geometry_msgs.msg import Twist
 ALPHA_H=0.6119
 ALPHA_V=0.4845
 Z_T=1.5
-Z_B=4.5
+Z_B=4.0
 THETA_A=np.pi/4
 RHO=1
 

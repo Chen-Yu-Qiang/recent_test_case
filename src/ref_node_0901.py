@@ -92,9 +92,9 @@ takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
 ref_pub = rospy.Publisher('ref', Twist, queue_size=1)
 land_pub = rospy.Publisher('tello/land', Empty, queue_size=1)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
-target51_sub = rospy.Subscriber('plan_wp_0_51', Twist, cb_target51)
-target51_sub = rospy.Subscriber('plan_wp_52', Twist, cb_target_all2)
-target52_sub = rospy.Subscriber('plan_wp_0_52', Twist, cb_target52)
+target051_sub = rospy.Subscriber('plan_wp_0_51', Twist, cb_target51)
+target52_sub = rospy.Subscriber('plan_wp_52', Twist, cb_target_all2)
+target052_sub = rospy.Subscriber('plan_wp_0_52', Twist, cb_target52)
 target_all_sub = rospy.Subscriber('plan_wp_51_52', Twist, cb_target_all)
 Ts=0.01
 rate = rospy.Rate(1/Ts)
@@ -104,8 +104,7 @@ m=0
 times=0
 while  not rospy.is_shutdown():
     if is_takeoff:
-        if t%1==0:
-            print(t)
+        print(t)
         if m==0:
             if t>=5:
                 m=1
@@ -211,15 +210,15 @@ while  not rospy.is_shutdown():
                 t=float(0)
             else:
                 t=t+Ts
-                ref_pub_msg=p2p_mean(Target52_position,Target_all_position,5,t)
+                ref_pub_msg=p2p_mean(Target52_position,Target_all_position2,5,t)
                 ref_pub.publish(ref_pub_msg)
         if m==10:
-            if t>=15:
-                m=11
+            if t>=50:
+                m=100
                 t=float(0)
             else:
                 t=t+Ts
-                ref_pub_msg=Target_all_position
+                ref_pub_msg=Target_all_position2
                 ref_pub.publish(ref_pub_msg)
         if m==11:
             if t>=5:

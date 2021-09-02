@@ -71,6 +71,8 @@ class image_converter:
             xyid,ip = mulitTarget.find_aruco_mean(cv_image)
             if xyid==-1 and ip==-1:
                 self.MAIN(cv_image,-1,cv_image.copy(),None,None,None,None)
+                self.together_show=cv_image.copy()
+                self.t_show()
                 return
 
             img_set = mulitTarget.divImg(ip,cv_image)
