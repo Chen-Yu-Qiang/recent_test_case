@@ -8,6 +8,8 @@
     <node pkg="recent_test_case" type="target_kf.py" name="target_kf" output="screen"/>
 
     <node pkg="recent_test_case" type="plan_wp.py" name="plan_wp" output="screen"/>
+    <node pkg="recent_test_case" type="ref_filter.py" name="ref_filter" output="screen"/>
+    <node pkg="recent_test_case" type="switch_plan_wp.py" name="switch_plan_wp" output="screen"/>
     <node pkg="recent_test_case" type="merge_box_node.py" name="merge_box_node" output="screen"/>
     <node pkg="recent_test_case" type="imuint.py" name="imuint" output="screen"/>
     <node pkg="recent_test_case" type="ref_node_0901.py" name="ref_node" output="screen"/>

@@ -3,13 +3,12 @@ import numpy as np
 import time
 import matplotlib.pyplot as plt
 from geometry_msgs.msg import Twist
-
 ALPHA_H=0.6119
 ALPHA_V=0.4845
 Z_T=1.5
-Z_B=4.0
-THETA_A=np.pi/4
-RHO=1
+Z_B=6.0
+THETA_A=np.pi/8
+RHO=0.8
 
 
 def cameraFrame2WorldFrame(cpk,ci):
@@ -208,8 +207,9 @@ def ci2twist(ci):
 class viewPanner:
     def __init__(self):
         self.taskPoint=[]
-        self.ci=[0.1,0,0,np.pi]
+        self.ci=[1.5,0,0,np.pi]
         self.it_length=1
+        self.g_time=5
     def set_taskPoint(self,_taskPoint):
         self.taskPoint=_taskPoint
     
@@ -228,19 +228,63 @@ class viewPanner:
         self.ci[2]=self.ci[2]+self.it_length*delta_ci[2]
         self.ci[3]=self.ci[3]+self.it_length*0.1*delta_ci[3]
         return self.ci
-    def gant(self,times=10,dec=0.9):
+    def gant(self,times=50,dec=0.98):
         self.it_length=1
-        for i in range(times):
-            self.one_it()
-            self.it_length=self.it_length*dec
+        if self.g_time>0:
+            for i in range(times*5):
+                self.one_it()
+            self.g_time=self.g_time-1
+            print(self.g_time)
+        else:
+            for i in range(times):
+                self.one_it()
+                self.it_length=self.it_length*dec
 
         return self.ci
+
+    def get_tpk(self):
+        tpk_list=[0 for i in range(len(self.taskPoint)*4)]
+        for i in range(len(self.taskPoint)):
+            cpk=worldFrame2CameraFrame(self.taskPoint[i],self.ci)
+            tpk_list[i*4:i*5]=ciSpace2tiSpace(cpk)
+            
+        return tpk_list
+
 
 
 def v_y(x,y,th,l=-0.5):
     xx=x+np.cos(th+np.pi*0.5)*l
     yy=y+np.sin(th+np.pi*0.5)*l
     return [x,xx],[y,yy]
+
+
+def plot_contourf(taskPoint,z=0.9,th=np.pi/2):
+    x_list=np.linspace(-1,5,401)
+    y_list=np.linspace(-2,2,401)
+
+    def f(x,y):
+        C_s_sum=0
+        _ci=[x,y,z,th]
+        for i in range(len(taskPoint)):
+            C_s_sum=C_s_sum+C_s(taskPoint[i],_ci)
+            # if C_s(taskPoint[i],_ci)==0:
+            #     return 0
+        return C_s_sum
+
+
+    Z=[[0 for i in range(len(x_list))]for j in range(len(y_list))]
+    for i in range(len(x_list)):
+         for j in range(len(y_list)):
+             Z[j][i]=f(x_list[i],y_list[j])
+
+
+    plt.contourf(x_list, y_list, Z,100,cmap='jet')
+    plt.colorbar()    
+    plt.axis([-1,5,-2,2])
+
+    plt.xlabel("X (m)")
+    plt.ylabel("Y (m)")
+    plt.show()
 
 if __name__ == '__main__':
 
@@ -294,6 +338,11 @@ if __name__ == '__main__':
     tck2_4=[0 for i in range(1000)]
 
     board_color=["tab:orange","tab:green"]
+
+    taskPoint[0]=[1.0,0.5,0.9,np.pi/2]
+    taskPoint[1]=[1.0,0.5,0.9,np.pi/2]
+    plot_contourf(taskPoint)
+
     # for i in range(len(taskPoint)):
     #     plt.scatter(targetSet[i].linear.x,targetSet[i].linear.y,color=board_color[i])
     #     [x,xx],[y,yy]=v_y(targetSet[i].linear.x,targetSet[i].linear.y,targetSet[i].angular.z)

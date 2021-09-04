@@ -87,9 +87,9 @@ def p2p_mean(p1,p2,t2,t):
     out_msg.angular.z=1.0*(p2.angular.z-p1.angular.z)/t2*t+p1.angular.z
     return out_msg
 
-rospy.init_node('ref_node_case2', anonymous=True)
+rospy.init_node('ref_node_case', anonymous=True)
 takeoff_sub = rospy.Subscriber('tello/takeoff', Empty, cb_takeoff)
-ref_pub = rospy.Publisher('ref', Twist, queue_size=1)
+ref_pub = rospy.Publisher('ref_bef', Twist, queue_size=1)
 land_pub = rospy.Publisher('tello/land', Empty, queue_size=1)
 land_sub = rospy.Subscriber('tello/land', Empty, cb_land)
 target051_sub = rospy.Subscriber('plan_wp_0_51', Twist, cb_target51)
