@@ -43,7 +43,13 @@ class KalmanFilter:
         self.P=np.eye(n)
         self.X=np.zeros((n,1))
         self.n=n
-      
+        self.F_future=np.eye(n)
+    def get_future(self):
+        my_x=self.X
+        my_x=np.dot(self.F_future,my_x)
+        
+        return my_x
+
     def prediction(self,u):
         self.X = np.dot(self.F,self.X)+np.dot(self.B,u)
         self.P = np.dot(np.dot(self.F,self.P),np.transpose(self.F)) + self.Q
@@ -56,16 +62,25 @@ class KalmanFilter:
         self.X[0][0]=x0_p
         self.X[1][0]=x0_v
         self.X[2][0]=x0_v_drift
+        self.F_future=self.F
+        for i in range(30):
+            self.F_future=np.dot(self.F,self.F_future)
     def constantSpeed(self,dt,x0_p,x0_v,Q_p,Q_v):
         self.F=np.array([[1,dt],[0,1]])
         self.Q[0][0]=Q_p
         self.Q[1][1]=Q_v
         self.X[0][0]=x0_p
         self.X[1][0]=x0_v
+        self.F_future=self.F
+        for i in range(30):
+            self.F_future=np.dot(self.F,self.F_future)
     def constantPosition(self,dt,x0_p,Q_p):
         self.F=np.array([[1]])
         self.Q[0][0]=Q_p
         self.X[0][0]=x0_p
+        self.F_future=self.F
+        for i in range(30):
+            self.F_future=np.dot(self.F,self.F_future)
 
 
 

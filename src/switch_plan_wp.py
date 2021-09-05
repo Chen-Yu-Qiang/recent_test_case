@@ -24,7 +24,7 @@ class a_plan_res:
     def cb_tpk(self,data):
         self.tpk=data.data
         # print(data)
-        if max(self.tpk)>=1:
+        if max(self.tpk)>=1 and min(self.tpk)>=-1:
             self.is_ok=0
         else:
             self.is_ok=1
@@ -35,6 +35,12 @@ class a_plan_res:
                 return i
         return -1
 
+    def which_board_timeoutout(self):
+        for i in range(len(self.in_num_obj)):
+            if self.in_num_obj[i].istimeoutout():
+                return i
+        return -1
+
     def get_output_msg(self):
         output_msg=Twist()
 
@@ -42,8 +48,12 @@ class a_plan_res:
             if self.which_board_timeout()==-1:
                 output_msg=self.res
                 output_msg.angular.x=6
+            elif self.which_board_timeoutout()==-1:
+                output_msg=self.in_num_obj[self.which_board_timeoutout()].last_see_uav_pos
+                output_msg.angular.x=0  
+                print("Lost target")                
             else:
-                output_msg=pr5152.in_num_obj[pr5152.which_board_timeout()].last_see_uav_pos
+                output_msg=self.in_num_obj[self.which_board_timeout()].last_see_uav_pos
                 output_msg.angular.x=0  
 
             return output_msg
@@ -62,11 +72,15 @@ class a_board:
         self.last_see_time=time.time()
 
     def istimeout(self):
-        if time.time()-self.last_see_time>1:
+        if time.time()-self.last_see_time>100:
             return 1
         else:
             return 0
-
+    def istimeoutout(self):
+        if time.time()-self.last_see_time>300:
+            return 1
+        else:
+            return 0
 
 
 board_set=[a_board(i) for i in [0,51,52]]

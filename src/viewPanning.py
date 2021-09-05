@@ -234,7 +234,7 @@ class viewPanner:
             for i in range(times*5):
                 self.one_it()
             self.g_time=self.g_time-1
-            print(self.g_time)
+            # print(self.g_time)
         else:
             for i in range(times):
                 self.one_it()
